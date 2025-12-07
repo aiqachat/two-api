@@ -18,7 +18,7 @@ For commercial licensing, please contact support@quantumnous.com
 */
 
 import React from 'react';
-import { Progress, Tag, Typography } from '@douyinfe/semi-ui';
+import { Progress, Space, Tag, Typography } from '@douyinfe/semi-ui';
 import {
   Music,
   FileText,
@@ -365,15 +365,23 @@ export const getTaskLogsColumns = ({
         if (isSuccess && isVideoTask && isUrl) {
           const videoUrl = `/v1/videos/${record.task_id}/content`;
           return (
-            <a
-              href='#'
-              onClick={(e) => {
-                e.preventDefault();
-                openVideoModal(videoUrl);
-              }}
-            >
-              {t('点击预览视频')}
-            </a>
+            <Space>
+              <a
+                href='#'
+                onClick={(e) => {
+                  e.preventDefault();
+                  openVideoModal(videoUrl);
+                }}
+              >
+                {t('点击预览视频')}
+              </a>
+              <a
+                href={record.data.content.video_url}
+                target='_blank'
+              >
+                {t('点击下载视频')}
+              </a>
+            </Space>
           );
         }
         if (!text) {
