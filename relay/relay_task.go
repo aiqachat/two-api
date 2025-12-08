@@ -97,12 +97,6 @@ func RelayTaskSubmit(c *gin.Context, info *relaycommon.RelayInfo) (taskErr *dto.
 		taskErr = service.TaskErrorWrapperLocal(errors.New("user quota is not enough"), "quota_not_enough", http.StatusForbidden)
 		return
 	}
-	if quota > 0 {
-		fmt.Println("----------------")
-		fmt.Println(userQuota)
-		fmt.Println(quota)
-		return service.TaskErrorWrapper(errors.New("测试"), "get_user_quota_failed", http.StatusInternalServerError)
-	}
 
 	if info.OriginTaskID != "" {
 		originTask, exist, err := model.GetByTaskId(info.UserId, info.OriginTaskID)

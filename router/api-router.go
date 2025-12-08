@@ -2,6 +2,7 @@ package router
 
 import (
 	"github.com/QuantumNous/new-api/controller"
+	"github.com/QuantumNous/new-api/controller/ws"
 	"github.com/QuantumNous/new-api/middleware"
 
 	"github.com/gin-contrib/gzip"
@@ -256,5 +257,13 @@ func SetApiRouter(router *gin.Engine) {
 			modelsRoute.PUT("/", controller.UpdateModelMeta)
 			modelsRoute.DELETE("/:id", controller.DeleteModelMeta)
 		}
+		// =========================================================================== 网商专用路由
+		wsRoute := apiRouter.Group("/ws")
+		wsRoute.Use(middleware.AdminAuth())
+		{
+			// 视频价格配置列表
+			wsRoute.POST("/video-ratio/list", wsController.WsVideoRatioList)
+		}
+		// =========================================================================== 网商专用路由
 	}
 }
