@@ -2,6 +2,7 @@ package relay
 
 import (
 	"fmt"
+	"strconv"
 	"strings"
 
 	"github.com/QuantumNous/new-api/common"
@@ -55,19 +56,26 @@ func getVideoInfo(c *gin.Context) (map[string]string, error) {
 		return result, errors.New("未获取到prompt内容")
 	}
 	result = parseVideoParamsSplit(str.(string))
-	if result["resolution"] != "" {
-		result["rs"] = result["resolution"]
+	if result["rs"] != "" {
+		result["resolution"] = result["rs"]
 	}
-	if result["duration"] != "" {
-		result["dur"] = result["duration"]
+	if result["dur"] != "" {
+		result["duration"] = result["dur"]
 	}
-	if result["rs"] == "" {
-		return result, errors.New("视频时长(秒)不能为空")
-	}
-	if result["dur"] == "" {
+	if _, ok := result["resolution"]; !ok {
 		return result, errors.New("视频分辨率不能为空")
 	}
+	if _, ok := result["duration"]; !ok {
+		return result, errors.New("视频时长(秒)不能为空")
+	}
 	return result, nil
+}
+
+// 视频模型价格倍率
+var videoModelRatioMap = map[string]float64{
+	"480p":  0.05,
+	"720p":  0.10,
+	"1080p": 0.15,
 }
 
 // HandleVideoModelRatio 处理视频模型价格比例
@@ -75,12 +83,21 @@ func HandleVideoModelRatio(
 	c *gin.Context,
 	info *relaycommon.RelayInfo,
 	ratio float64) (float64, error) {
+	// =========================================== 获取视频参数
 	videoInfo, err := getVideoInfo(c)
 	if err != nil {
 		return 0, err
 	}
-	fmt.Println("------------------1")
-	fmt.Println(videoInfo)
+	resolution := videoInfo["resolution"]
+	duration, err := strconv.Atoi(videoInfo["duration"])
+	if err != nil {
+		return 0, err
+	}
+	resolutionRatio, ok := videoModelRatioMap[resolution]
+	if !ok {
+		return 0, errors.New(fmt.Sprintf("不支持的视频分辨率：%s", resolution))
+	}
+	// =========================================== 获取视频参数
 	modelName := info.OriginModelName
 	if modelName == "" {
 		return 0, errors.New("未获取到模型名称")
@@ -92,6 +109,7 @@ func HandleVideoModelRatio(
 	}
 	fmt.Println(userGroupRatio)
 	// =========================================== 获取用户分组倍率
-
-	return 0, errors.New("测试")
+	resultRatio := resolutionRatio * float64(duration) * userGroupRatio
+	println(fmt.Sprintf("视频分辨率: %s, 视频秒数: %d, 分辨率每秒价格: %.4f, 结果倍率: %.4f", resolution, duration, resolutionRatio, resultRatio))
+	return resultRatio, nil
 }
