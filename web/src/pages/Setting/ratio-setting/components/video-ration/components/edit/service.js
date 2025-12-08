@@ -7,12 +7,27 @@ const createWsVideoRation = async ({ modeName, resolution, price }) => {
       resolution,
       price,
     });
-    WsError.checkApiResult(res)
+    WsError.checkApiResult(res);
   } catch (e) {
-    WsError.handleError(e)
+    WsError.handleError(e);
+  }
+};
+
+const getFullModelList = async () => {
+  try {
+    const res = await deerService.get('/api/models/', {
+      page_size: 10000,
+      p: 1,
+    });
+    WsError.checkApiResult(res);
+    return res.data.items;
+  } catch (e) {
+    WsError.handleError(e);
+    return []
   }
 };
 
 export default {
-  createWsVideoRation
-}
+  getFullModelList,
+  createWsVideoRation,
+};
