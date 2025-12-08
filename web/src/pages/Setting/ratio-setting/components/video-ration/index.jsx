@@ -1,16 +1,16 @@
 import React from 'react';
-import {
-  Button,
-} from '@douyinfe/semi-ui';
-import service from './service'
+import { Button } from '@douyinfe/semi-ui';
+import { editModal } from './components/edit';
 
 export default function ModelSettingsVisualEditor(props) {
-  console.log(props)
+  console.log(props);
   return (
     <div>
       <Button
         onClick={() => {
-          service.createWsVideoRation({}).then()
+          editModal.open({}, () => {
+            console.log('#')
+          });
         }}
       >
         <>测试</>
