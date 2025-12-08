@@ -1,5 +1,5 @@
 import { Modal } from '@douyinfe/semi-ui';
-import { deerCreateModalHandle } from '@components';
+import { wsCreateModalHandle } from '@components';
 
 export const TestModal = ({
                             modalProps,
@@ -25,4 +25,4 @@ export const TestModal = ({
   );
 };
 
-export const testModal = deerCreateModalHandle(TestModal);
+export const testModal = wsCreateModalHandle(TestModal);

@@ -267,6 +267,7 @@ func migrateDB() error {
 		&Setup{},
 		&TwoFA{},
 		&TwoFABackupCode{},
+		&WsVideoRatio{},
 	)
 	if err != nil {
 		return err

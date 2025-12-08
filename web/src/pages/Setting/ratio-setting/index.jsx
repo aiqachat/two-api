@@ -26,6 +26,7 @@ import ModelRatioSettings from './components/ModelRatioSettings';
 import ModelSettingsVisualEditor from './components/model-settings-visual-editor';
 import ModelRatioNotSetEditor from './components/ModelRationNotSetEditor';
 import UpstreamRatioSync from './components/UpstreamRatioSync';
+import VideoRation from './components/video-ration';
 
 import { API, showError, toBoolean } from '@helpers';
 
@@ -113,6 +114,9 @@ const RatioSetting = () => {
                     </Tabs.TabPane>
                     <Tabs.TabPane tab={t('上游倍率同步')} itemKey='upstream_sync'>
                         <UpstreamRatioSync options={inputs} refresh={onRefresh} />
+                    </Tabs.TabPane>
+                    <Tabs.TabPane tab={t('视频倍率设置')} itemKey='video_ration'>
+                        <VideoRation options={inputs} refresh={onRefresh} />
                     </Tabs.TabPane>
                 </Tabs>
             </Card>

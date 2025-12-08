@@ -26,6 +26,7 @@ func WsVideoRatioCreate(c *gin.Context) {
 	)
 	if err != nil {
 		common.ApiError(c, err)
+		return
 	}
 	common.ApiSuccess(c, gin.H{})
 }

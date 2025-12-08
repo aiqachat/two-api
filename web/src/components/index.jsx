@@ -1,2 +1,2 @@
 
-export * from './deer-modal-handle';
+export * from './ws-modal-handle';

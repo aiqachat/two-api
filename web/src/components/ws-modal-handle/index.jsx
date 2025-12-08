@@ -33,7 +33,7 @@ const ModalHandleContainer = ({
 /**
  * 创建弹窗控制器
  */
-export const deerCreateModalHandle = (Comp) => {
+export const wsCreateModalHandle = (Comp) => {
   const container = document.createDocumentFragment()
   return {
     open: (data, onComplete) => {
