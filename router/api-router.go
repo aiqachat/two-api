@@ -2,7 +2,6 @@ package router
 
 import (
 	"github.com/QuantumNous/new-api/controller"
-	"github.com/QuantumNous/new-api/controller/ws"
 	"github.com/QuantumNous/new-api/middleware"
 
 	"github.com/gin-contrib/gzip"
@@ -261,8 +260,8 @@ func SetApiRouter(router *gin.Engine) {
 		wsRoute := apiRouter.Group("/ws")
 		wsRoute.Use(middleware.AdminAuth())
 		{
-			// 视频价格配置列表
-			wsRoute.POST("/video-ratio/list", wsController.WsVideoRatioList)
+			wsRoute.POST("/video-ratio/create", controller.WsVideoRatioCreate)
+			wsRoute.POST("/video-ratio/list", controller.WsVideoRatioList)
 		}
 		// =========================================================================== 网商专用路由
 	}
