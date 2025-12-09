@@ -24,15 +24,15 @@ type WsVideoRatioMap struct {
 	UpdatedTime int64              `json:"updated_time"`
 }
 
-func WsVideoRatio2map(w *WsVideoRatio) (*WsVideoRatioMap, error) {
-	res := &WsVideoRatioMap{}
+func WsVideoRatio2map(w WsVideoRatio) (WsVideoRatioMap, error) {
+	res := WsVideoRatioMap{}
 	res.Id = w.Id
 	res.ModelName = w.ModelName
 	res.CreatedTime = w.CreatedTime
 	res.UpdatedTime = w.UpdatedTime
 	err := json.Unmarshal([]byte(w.Config), &res.Config)
 	if err != nil {
-		return nil, err
+		return res, err
 	}
 	return res, nil
 }
@@ -46,7 +46,9 @@ var ResolutionList = []string{
 
 func WsVideoRatioPageList(
 	pageInfo *common.PageInfo, modelName string) (
-	items []*WsVideoRatioMap, total int64, err error) {
+	list []WsVideoRatioMap, total int64, err error) {
+	var items []WsVideoRatio
+	list = []WsVideoRatioMap{}
 	tx := DB.Begin()
 	if tx.Error != nil {
 		return nil, 0, tx.Error
@@ -74,7 +76,13 @@ func WsVideoRatioPageList(
 	if err = tx.Commit().Error; err != nil {
 		return nil, 0, err
 	}
-	return items, total, nil
+	for i := range items {
+		m, err := WsVideoRatio2map(items[i])
+		if err == nil {
+			list = append(list, m)
+		}
+	}
+	return list, total, nil
 }
 
 func WsVideoRatioGetByModeName(modelName string) (*WsVideoRatio, error) {
