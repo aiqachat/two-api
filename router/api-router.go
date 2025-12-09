@@ -263,6 +263,7 @@ func SetApiRouter(router *gin.Engine) {
 			wsRoute.GET("/video-ratio/page", controller.WsVideoRatioPageList)
 			wsRoute.POST("/video-ratio/resolutionList", controller.WsVideoRatioResolutionList)
 			wsRoute.POST("/video-ratio/create", controller.WsVideoRatioCreate)
+			wsRoute.POST("/video-ratio/del", controller.WsVideoRatioDeleteById)
 		}
 		// =========================================================================== 网商专用路由
 	}

@@ -116,7 +116,7 @@ func WsVideoRatioCreate(modelName string, config map[string]float64) (*WsVideoRa
 		return nil, errors.New("模型名称不能为空")
 	}
 	if config == nil {
-		return nil, errors.New("分辨率不能为空")
+		return nil, errors.New("倍率配置不能为空")
 	}
 	current, err := WsVideoRatioGetByModeName(modelName)
 	if current != nil {
@@ -148,7 +148,11 @@ func WsVideoRatioCreate(modelName string, config map[string]float64) (*WsVideoRa
 //	return err
 //}
 //
-//func (wsVideoRatio *WsVideoRatio) Delete() error {
-//	err := DB.Delete(wsVideoRatio).Error
-//	return err
-//}
+
+func WsVideoRatioDeleteById(id  int) error {
+	if id == 0 {
+		return errors.New("配置ID不能为空")
+	}
+	err := DB.Delete(&WsVideoRatio{}, id).Error
+	return err
+}

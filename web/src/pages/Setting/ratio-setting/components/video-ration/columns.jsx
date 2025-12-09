@@ -1,8 +1,9 @@
-import { Button, Space } from '@douyinfe/semi-ui';
+import { Button, Modal, Space } from '@douyinfe/semi-ui';
 import { IconDelete, IconEdit } from '@douyinfe/semi-icons';
 import React from 'react';
+import service from './service';
 
-export const columns = () => {
+export const columns = (refresh) => {
   return [
     {
       title: 'ID',
@@ -39,7 +40,7 @@ export const columns = () => {
       title: '操作',
       key: 'action',
       width: 130,
-      render: (_, record) => (
+      render: (_, { id }) => (
         <Space>
           <Button
             type='primary'
@@ -53,6 +54,23 @@ export const columns = () => {
             type='danger'
             onClick={() => {
               console.log('#');
+              const modal = Modal.confirm({
+                open: true,
+                title: '删除模型',
+                content: '确定删除该模型吗？',
+                okText: '确定',
+                cancelText: '取消',
+                onOk: async () => {
+                  try {
+                    modal.update({ okButtonProps: { loading: true } });
+                    await service.delWsVideoRation(id);
+                    refresh();
+                  } catch (e) {
+                  } finally {
+                    modal.update({ okButtonProps: { loading: false } });
+                  }
+                },
+              });
             }}
           />
         </Space>

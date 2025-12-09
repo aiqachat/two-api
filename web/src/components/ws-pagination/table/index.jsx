@@ -19,8 +19,8 @@ export const WsPaginationTable = ({
     pageSize: tableData.pageSize,
     defaultPageSize: tableData.defaultPageSize,
     defaultCurrent: tableData.defaultCurrent,
-    showTotal: (total, range) =>
-      `当前显示${range[0]}到${range[1]}, 共${total}条数据`,
+    // showTotal: (total, range) =>
+    //   `当前显示${range[0]}到${range[1]}, 共${total}条数据`,
     ...pagination,
     showSizeChanger,
   };

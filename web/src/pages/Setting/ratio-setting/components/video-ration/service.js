@@ -19,21 +19,16 @@ const getWsVideoRationPageList = async ({
   }
 };
 
-const getResolutionOptionsList = async () => {
+const delWsVideoRation = async (id) => {
   try {
-    const res = await deerService.post(
-      '/api/ws/video-ratio/resolutionList',
-      {},
-    );
+    const res = await deerService.post('/api/ws/video-ratio/del', { id });
     WsError.checkApiResult(res);
-    return res.data.items;
   } catch (e) {
     WsError.handleError(e);
-    return [];
   }
 };
 
 export default {
   getWsVideoRationPageList,
-  getResolutionOptionsList,
+  delWsVideoRation,
 };

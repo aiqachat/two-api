@@ -53,3 +53,16 @@ func WsVideoRatioCreate(c *gin.Context) {
 	}
 	common.ApiSuccess(c, gin.H{})
 }
+
+func WsVideoRatioDeleteById(c *gin.Context) {
+	var params model.WsVideoRatioMap
+	if err := common.UnmarshalBodyReusable(c, &params); err != nil {
+		common.ApiError(c, err)
+		return
+	}
+	if err := model.WsVideoRatioDeleteById(params.Id); err != nil {
+		common.ApiError(c, err)
+		return
+	}
+	common.ApiSuccess(c, gin.H{})
+}
