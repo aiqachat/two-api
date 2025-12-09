@@ -17,7 +17,7 @@ export default function ModelSettingsVisualEditor() {
           icon={<IconPlus />}
           size='small'
           onClick={() => {
-            editModal.open({}, () => {
+            editModal.open({ edit: false }, () => {
               table.reload();
             });
           }}

@@ -98,7 +98,7 @@ func WsVideoRatioGetByModeName(modelName string) (*WsVideoRatio, error) {
 	return &wsVideoRatio, err
 }
 
-func WsVideoRatioGetById(id int) (*WsVideoRatio, error) {
+func WsVideoRatioGetById(id int) (*WsVideoRatioMap, error) {
 	if id == 0 {
 		return nil, errors.New("id 为空！")
 	}
@@ -108,7 +108,30 @@ func WsVideoRatioGetById(id int) (*WsVideoRatio, error) {
 	if err != nil {
 		return nil, err
 	}
-	return &wsVideoRatio, err
+	m, err := WsVideoRatio2map(wsVideoRatio)
+	return &m, err
+}
+
+func WsVideoRatioUpdateConfigById(id int, config map[string]float64) error {
+	if id == 0 {
+		return errors.New("id不能为空！")
+	}
+	if config == nil {
+		return errors.New("倍率配置不能为空")
+	}
+	var err error = nil
+	// 将config转换为JSON字符串
+	configBytes, err := json.Marshal(config)
+	if err != nil {
+		return errors.Wrap(err, "无法序列化config为JSON")
+	}
+	err = DB.Model(&WsVideoRatio{}).
+		Where("id = ?", id).
+		Updates(map[string]interface{}{
+			"config":       string(configBytes),
+			"updated_time": common.GetTimestamp(),
+		}).Error
+	return err
 }
 
 func WsVideoRatioCreate(modelName string, config map[string]float64) (*WsVideoRatio, error) {
@@ -149,7 +172,7 @@ func WsVideoRatioCreate(modelName string, config map[string]float64) (*WsVideoRa
 //}
 //
 
-func WsVideoRatioDeleteById(id  int) error {
+func WsVideoRatioDeleteById(id int) error {
 	if id == 0 {
 		return errors.New("配置ID不能为空")
 	}

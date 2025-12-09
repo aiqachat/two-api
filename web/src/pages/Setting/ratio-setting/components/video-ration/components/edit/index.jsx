@@ -12,10 +12,9 @@ export const EditModal = ({ modalProps, onComplete, edit = true, id }) => {
   const loadDetails = async () => {
     try {
       const res = await service.getWsVideoRationDetails(id);
-      console.log(res)
       formRef.current?.formApi.setValues({
         model_name: res.model_name,
-        // resolution: RESOLUTION_LIST[0].value,
+        config: res.config,
       });
     } catch (e) {
       WsError.handleError(e);
@@ -23,8 +22,10 @@ export const EditModal = ({ modalProps, onComplete, edit = true, id }) => {
   };
   useEffect(() => {
     if (!edit) return;
+    if (!resolutionItems.value) return;
+    if (!modelOptions.value) return;
     loadDetails().then();
-  }, [edit]);
+  }, [edit, resolutionItems.value, modelOptions.value]);
   return (
     <Modal
       {...modalProps}
@@ -32,7 +33,11 @@ export const EditModal = ({ modalProps, onComplete, edit = true, id }) => {
       onOk={async () => {
         try {
           const values = await formRef.current?.formApi.validate();
-          await service.createWsVideoRation(values);
+          if (edit) {
+            await service.editWsVideoRation({ ...values, id });
+          } else {
+            await service.createWsVideoRation(values);
+          }
           onComplete(true);
           modalProps.onCancel();
         } catch (e) {
@@ -44,6 +49,7 @@ export const EditModal = ({ modalProps, onComplete, edit = true, id }) => {
         <Form.Select
           label='模型'
           field='model_name'
+          disabled={edit}
           rules={[{ required: true }]}
           loading={modelOptions.loading}
           optionList={modelOptions.value}
@@ -54,7 +60,7 @@ export const EditModal = ({ modalProps, onComplete, edit = true, id }) => {
           return (
             <Form.InputNumber
               label={`分辨率${item.name}每秒价格`}
-              field={item.key}
+              field={`config.${item.key}`}
               rules={[{ required: true }]}
               precision={2}
               step={1}

@@ -4,6 +4,7 @@ import (
 	"github.com/QuantumNous/new-api/common"
 	"github.com/QuantumNous/new-api/model"
 	"github.com/gin-gonic/gin"
+	"github.com/pkg/errors"
 )
 
 // 视频倍率配置列表
@@ -65,7 +66,25 @@ func WsVideoRatioGetById(c *gin.Context) {
 		common.ApiError(c, err)
 		return
 	}
+	if res == nil {
+		common.ApiError(c, errors.New("未找到该数据"))
+		return
+	}
 	common.ApiSuccess(c, res)
+}
+
+func WsVideoRatioUpdateById(c *gin.Context) {
+	var params model.WsVideoRatioMap
+	if err := common.UnmarshalBodyReusable(c, &params); err != nil {
+		common.ApiError(c, err)
+		return
+	}
+	err := model.WsVideoRatioUpdateConfigById(params.Id, params.Config)
+	if err != nil {
+		common.ApiError(c, err)
+		return
+	}
+	common.ApiSuccess(c, gin.H{})
 }
 
 func WsVideoRatioDeleteById(c *gin.Context) {

@@ -1,14 +1,6 @@
 import { deerService, WsError } from '@helpers';
 
-const getWsVideoRationDetails = async (id) => {
-  const res = await deerService.post('/api/ws/video-ratio/details', {
-    id,
-  });
-  WsError.checkApiResult(res);
-  return res.data;
-};
-
-const createWsVideoRation = async ({ model_name, ...config }) => {
+const createWsVideoRation = async ({ model_name, config }) => {
   try {
     const res = await deerService.post('/api/ws/video-ratio/create', {
       model_name,
@@ -18,6 +10,26 @@ const createWsVideoRation = async ({ model_name, ...config }) => {
   } catch (e) {
     WsError.handleError(e);
   }
+};
+
+const editWsVideoRation = async ({ id, config }) => {
+  try {
+    const res = await deerService.post('/api/ws/video-ratio/update', {
+      id,
+      config,
+    });
+    WsError.checkApiResult(res);
+  } catch (e) {
+    WsError.handleError(e);
+  }
+};
+
+const getWsVideoRationDetails = async (id) => {
+  const res = await deerService.post('/api/ws/video-ratio/details', {
+    id,
+  });
+  WsError.checkApiResult(res);
+  return res.data;
 };
 
 const getResolutionOptionsList = async () => {
@@ -53,8 +65,9 @@ const getModelOptionsList = async () => {
 };
 
 export default {
+  createWsVideoRation,
+  editWsVideoRation,
   getWsVideoRationDetails,
   getModelOptionsList,
   getResolutionOptionsList,
-  createWsVideoRation,
 };
