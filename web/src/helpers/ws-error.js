@@ -1,6 +1,7 @@
 import { Toast } from '@douyinfe/semi-ui';
 import { debounce } from 'lodash';
 import { isAxiosError } from 'axios';
+import { wsDev } from './ws-dev';
 
 export const openErrorDialog = debounce(
   (msg) => {
@@ -45,6 +46,9 @@ export class WsError extends Error {
   static handleError(e) {
     // axios的异常已被API模块处理
     if (isAxiosError(e)) {
+      if (location.host === 'localhost:5173' && e.status === 401) {
+        wsDev.autoLogin().then();
+      }
       return;
     }
     console.error(e);

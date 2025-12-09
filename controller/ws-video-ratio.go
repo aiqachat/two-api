@@ -9,7 +9,8 @@ import (
 // 视频倍率配置列表
 func WsVideoRatioPageList(c *gin.Context) {
 	pageInfo := common.GetPageQuery(c)
-	items, total, err := model.WsVideoRatioPageList(pageInfo)
+	modelName := c.Query("model_name")
+	items, total, err := model.WsVideoRatioPageList(pageInfo, modelName)
 	if err != nil {
 		common.ApiError(c, err)
 		return

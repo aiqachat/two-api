@@ -15,7 +15,7 @@ const getWsVideoRationPageList = async ({
     return res.data;
   } catch (e) {
     WsError.handleError(e);
-    return [];
+    return null;
   }
 };
 
