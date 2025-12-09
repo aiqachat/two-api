@@ -2,6 +2,7 @@ import { Button, Modal, Space } from '@douyinfe/semi-ui';
 import { IconDelete, IconEdit } from '@douyinfe/semi-icons';
 import React from 'react';
 import service from './service';
+import { editModal } from './components/edit';
 
 export const columns = (refresh) => {
   return [
@@ -46,7 +47,9 @@ export const columns = (refresh) => {
             type='primary'
             icon={<IconEdit />}
             onClick={() => {
-              console.log('#');
+              editModal.open({ id }, () => {
+                refresh();
+              });
             }}
           ></Button>
           <Button

@@ -9,11 +9,21 @@ export const EditModal = ({ modalProps, onComplete, edit = true, id }) => {
   const formRef = useRef(null);
   const modelOptions = useAsync(service.getModelOptionsList);
   const resolutionItems = useAsync(service.getResolutionOptionsList);
+  const loadDetails = async () => {
+    try {
+      const res = await service.getWsVideoRationDetails(id);
+      console.log(res)
+      formRef.current?.formApi.setValues({
+        model_name: res.model_name,
+        // resolution: RESOLUTION_LIST[0].value,
+      });
+    } catch (e) {
+      WsError.handleError(e);
+    }
+  };
   useEffect(() => {
-    formRef.current?.formApi.setValues({
-      name: '视频比率',
-      // resolution: RESOLUTION_LIST[0].value,
-    });
+    if (!edit) return;
+    loadDetails().then();
   }, [edit]);
   return (
     <Modal
@@ -33,7 +43,7 @@ export const EditModal = ({ modalProps, onComplete, edit = true, id }) => {
       <Form ref={formRef}>
         <Form.Select
           label='模型'
-          field='modelName'
+          field='model_name'
           rules={[{ required: true }]}
           loading={modelOptions.loading}
           optionList={modelOptions.value}
