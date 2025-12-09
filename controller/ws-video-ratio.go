@@ -23,11 +23,6 @@ func WsVideoRatioPageList(c *gin.Context) {
 	return
 }
 
-type WsVideoRatioCreateParams struct {
-	ModelName string             `json:"model_name"`
-	Config   map[string]float64 `json:"config"`
-}
-
 // 视频倍率支付分辨率列表
 func WsVideoRatioResolutionList(c *gin.Context) {
 	var items []map[string]any
@@ -44,7 +39,7 @@ func WsVideoRatioResolutionList(c *gin.Context) {
 
 // 创建视频倍率配置
 func WsVideoRatioCreate(c *gin.Context) {
-	var params WsVideoRatioCreateParams
+	var params model.WsVideoRatioMap
 	if err := common.UnmarshalBodyReusable(c, &params); err != nil {
 		common.ApiError(c, err)
 		return

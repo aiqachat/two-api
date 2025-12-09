@@ -16,6 +16,27 @@ type WsVideoRatio struct {
 	UpdatedTime int64 `json:"updated_time" gorm:"type:bigint;default:null"`
 }
 
+type WsVideoRatioMap struct {
+	Id          int                `json:"id"`
+	ModelName   string             `json:"model_name"`
+	Config      map[string]float64 `json:"config"`
+	CreatedTime int64              `json:"created_time"`
+	UpdatedTime int64              `json:"updated_time"`
+}
+
+func WsVideoRatio2map(w *WsVideoRatio) (*WsVideoRatioMap, error) {
+	res := &WsVideoRatioMap{}
+	res.Id = w.Id
+	res.ModelName = w.ModelName
+	res.CreatedTime = w.CreatedTime
+	res.UpdatedTime = w.UpdatedTime
+	err := json.Unmarshal([]byte(w.Config), &res.Config)
+	if err != nil {
+		return nil, err
+	}
+	return res, nil
+}
+
 // ResolutionList 支持的分辨率列表
 var ResolutionList = []string{
 	"1080p",
@@ -23,7 +44,9 @@ var ResolutionList = []string{
 	"480p",
 }
 
-func WsVideoRatioPageList(pageInfo *common.PageInfo, modelName string) (items []*WsVideoRatio, total int64, err error) {
+func WsVideoRatioPageList(
+	pageInfo *common.PageInfo, modelName string) (
+	items []*WsVideoRatioMap, total int64, err error) {
 	tx := DB.Begin()
 	if tx.Error != nil {
 		return nil, 0, tx.Error
@@ -36,7 +59,7 @@ func WsVideoRatioPageList(pageInfo *common.PageInfo, modelName string) (items []
 	query := tx.Model(&WsVideoRatio{})
 
 	if modelName != "" {
-		query = query.Where("model_name LIKE ?", "%" + modelName + "%")
+		query = query.Where("model_name LIKE ?", "%"+modelName+"%")
 	}
 
 	if err = query.Count(&total).Error; err != nil {
