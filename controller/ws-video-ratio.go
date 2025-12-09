@@ -20,14 +20,21 @@ func WsVideoRatioList(c *gin.Context) {
 }
 
 type WsVideoRatioCreateParams struct {
-	ModeName string             `json:"mode_name"`
+	ModelName string             `json:"model_name"`
 	Config   map[string]float64 `json:"config"`
 }
 
 // 视频倍率支付分辨率列表
 func WsVideoRatioResolutionList(c *gin.Context) {
+	var items []map[string]any
+	for _, item := range model.ResolutionList {
+		items = append(items, gin.H{
+			"key": item,
+			"name": item,
+		})
+	}
 	common.ApiSuccess(c, gin.H{
-		"list": model.ResolutionList,
+		"items": items,
 	})
 }
 
@@ -39,7 +46,7 @@ func WsVideoRatioCreate(c *gin.Context) {
 		return
 	}
 	_, err := model.WsVideoRatioCreate(
-		params.ModeName, params.Config,
+		params.ModelName, params.Config,
 	)
 	if err != nil {
 		common.ApiError(c, err)

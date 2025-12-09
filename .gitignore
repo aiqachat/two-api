@@ -24,3 +24,4 @@ electron/dist
 data/
 
 test.go
+dump.rdb

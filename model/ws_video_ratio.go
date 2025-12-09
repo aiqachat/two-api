@@ -8,9 +8,9 @@ import (
 )
 
 type WsVideoRatio struct {
-	Id       int    `json:"id" gorm:"primaryKey;autoIncrement"`
-	ModeName string `json:"mode_name" gorm:"type:varchar(255);not null;unique"`
-	Config   string `json:"config" gorm:"type:text"`
+	Id        int    `json:"id" gorm:"primaryKey;autoIncrement"`
+	ModelName string `json:"model_name" gorm:"type:varchar(255);not null;unique"`
+	Config    string `json:"config" gorm:"type:text"`
 	//Price       float64 `json:"price" gorm:"type:decimal(10,2);not null"`
 	CreatedTime int64 `json:"created_time" gorm:"type:bigint;default:null"`
 	UpdatedTime int64 `json:"updated_time" gorm:"type:bigint;default:null"`
@@ -23,12 +23,42 @@ var ResolutionList = []string{
 	"480p",
 }
 
-func WsVideoRatioCreate(modeName string, config map[string]float64) (*WsVideoRatio, error) {
-	if modeName == "" {
+func WsVideoRatioCreateGetByModeName(modelName string) (*WsVideoRatio, error) {
+	if modelName == "" {
+		return nil, errors.New("模型名称不能为空")
+	}
+	wsVideoRatio := WsVideoRatio{ModelName: modelName}
+	var err error = nil
+	err = DB.First(&wsVideoRatio, "model_name = ?", modelName).Error
+	if err != nil {
+		return nil, err
+	}
+	return &wsVideoRatio, err
+}
+
+func WsVideoRatioCreateGetById(id int) (*WsVideoRatio, error) {
+	if id == 0 {
+		return nil, errors.New("id 为空！")
+	}
+	wsVideoRatio := WsVideoRatio{Id: id}
+	var err error = nil
+	err = DB.First(&wsVideoRatio, "id = ?", id).Error
+	if err != nil {
+		return nil, err
+	}
+	return &wsVideoRatio, err
+}
+
+func WsVideoRatioCreate(modelName string, config map[string]float64) (*WsVideoRatio, error) {
+	if modelName == "" {
 		return nil, errors.New("模型名称不能为空")
 	}
 	if config == nil {
 		return nil, errors.New("分辨率不能为空")
+	}
+	current, err := WsVideoRatioCreateGetByModeName(modelName)
+	if current != nil {
+		return nil, errors.New("已存在模型'" + modelName + "'的视频配置")
 	}
 	for _, resolution := range ResolutionList {
 		if _, ok := config[resolution]; !ok {
@@ -41,7 +71,7 @@ func WsVideoRatioCreate(modeName string, config map[string]float64) (*WsVideoRat
 		return nil, errors.Wrap(err, "无法序列化config为JSON")
 	}
 	wsVideoRatio := &WsVideoRatio{
-		ModeName:    modeName,
+		ModelName:   modelName,
 		Config:      string(configBytes),
 		UpdatedTime: common.GetTimestamp(),
 		CreatedTime: common.GetTimestamp(),
