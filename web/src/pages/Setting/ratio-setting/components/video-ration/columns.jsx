@@ -1,3 +1,7 @@
+import { Button, Space } from '@douyinfe/semi-ui';
+import { IconDelete, IconEdit } from '@douyinfe/semi-icons';
+import React from 'react';
+
 export const columns = () => {
   return [
     {
@@ -8,18 +12,51 @@ export const columns = () => {
       fixed: 'left',
     },
     {
-      title: '积分包名称',
-      dataIndex: 'name',
-      key: 'name',
-      width: 120,
+      title: '模型名称',
+      dataIndex: 'model_name',
+      key: 'model_name',
     },
     {
-      title: '积分包余量',
-      dataIndex: 'info',
-      key: 'info',
-      render: (_) => {
-        return <div style={{ display: 'flex', gap: 20 }}>{_}</div>;
+      title: '每秒价格',
+      dataIndex: 'config',
+      key: 'config',
+      width: 300,
+      render: (config) => {
+        return (
+          <>
+            {Object.entries(config).map(([key, value]) => {
+              return (
+                <div key={key}>
+                  分辨率({key}): {value}元/秒
+                </div>
+              );
+            })}
+          </>
+        );
       },
+    },
+    {
+      title: '操作',
+      key: 'action',
+      width: 130,
+      render: (_, record) => (
+        <Space>
+          <Button
+            type='primary'
+            icon={<IconEdit />}
+            onClick={() => {
+              console.log('#');
+            }}
+          ></Button>
+          <Button
+            icon={<IconDelete />}
+            type='danger'
+            onClick={() => {
+              console.log('#');
+            }}
+          />
+        </Space>
+      ),
     },
   ];
 };
