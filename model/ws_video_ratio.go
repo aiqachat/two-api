@@ -23,7 +23,7 @@ var ResolutionList = []string{
 	"480p",
 }
 
-func WsVideoRatioPageList(pageInfo *common.PageInfo) (items []*WsVideoRatio, total int64, err error) {
+func WsVideoRatioPageList(pageInfo *common.PageInfo, model_name string) (items []*WsVideoRatio, total int64, err error) {
 	tx := DB.Begin()
 	if tx.Error != nil {
 		return nil, 0, tx.Error
@@ -35,12 +35,17 @@ func WsVideoRatioPageList(pageInfo *common.PageInfo) (items []*WsVideoRatio, tot
 	}()
 	query := tx.Model(&WsVideoRatio{})
 
+	if model_name != "" {
+		like := "%%" + model_name + "%%"
+		query = query.Where("model_name LIKE ?", like)
+	}
+
 	if err = query.Count(&total).Error; err != nil {
 		tx.Rollback()
 		return nil, 0, err
 	}
 
-	if err = tx.Unscoped().Order("id desc").Limit(pageInfo.GetPageSize()).Offset(pageInfo.GetStartIdx()).Find(&items).Error; err != nil {
+	if err = tx.Unscoped().Order("updated_time desc").Limit(pageInfo.GetPageSize()).Offset(pageInfo.GetStartIdx()).Find(&items).Error; err != nil {
 		tx.Rollback()
 		return nil, 0, err
 	}
