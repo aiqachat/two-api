@@ -31,97 +31,98 @@ import VideoRation from './components/video-ration';
 import { API, showError, toBoolean } from '@helpers';
 
 const RatioSetting = () => {
-    const { t } = useTranslation();
+  const { t } = useTranslation();
 
-    let [inputs, setInputs] = useState({
-        ModelPrice: '',
-        ModelRatio: '',
-        CacheRatio: '',
-        CompletionRatio: '',
-        GroupRatio: '',
-        GroupGroupRatio: '',
-        ImageRatio: '',
-        AudioRatio: '',
-        AudioCompletionRatio: '',
-        AutoGroups: '',
-        DefaultUseAutoGroup: false,
-        ExposeRatioEnabled: false,
-        UserUsableGroups: '',
-        'group_ratio_setting.group_special_usable_group': '',
-    });
+  let [inputs, setInputs] = useState({
+    ModelPrice: '',
+    ModelRatio: '',
+    CacheRatio: '',
+    CompletionRatio: '',
+    GroupRatio: '',
+    GroupGroupRatio: '',
+    ImageRatio: '',
+    AudioRatio: '',
+    AudioCompletionRatio: '',
+    AutoGroups: '',
+    DefaultUseAutoGroup: false,
+    ExposeRatioEnabled: false,
+    UserUsableGroups: '',
+    'group_ratio_setting.group_special_usable_group': '',
+  });
 
-    const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [activeTab, setActiveTab] = useState('model');
 
-    const getOptions = async () => {
-        const res = await API.get('/api/option/');
-        const { success, message, data } = res.data;
-        if (success) {
-            let newInputs = {};
-            data.forEach((item) => {
-                if (
-                    item.value.startsWith('{') || item.value.startsWith('[')
-                ) {
-                    try {
-                        item.value = JSON.stringify(JSON.parse(item.value), null, 2);
-                    } catch (e) {
-                        // 如果后端返回的不是合法 JSON，直接展示
-                    }
-                }
-                if (['DefaultUseAutoGroup', 'ExposeRatioEnabled'].includes(item.key)) {
-                    newInputs[item.key] = toBoolean(item.value);
-                } else {
-                    newInputs[item.key] = item.value;
-                }
-            });
-            setInputs(newInputs);
+  const getOptions = async () => {
+    const res = await API.get('/api/option/');
+    const { success, message, data } = res.data;
+    if (success) {
+      let newInputs = {};
+      data.forEach((item) => {
+        if (item.value.startsWith('{') || item.value.startsWith('[')) {
+          try {
+            item.value = JSON.stringify(JSON.parse(item.value), null, 2);
+          } catch (e) {
+            // 如果后端返回的不是合法 JSON，直接展示
+          }
+        }
+        if (['DefaultUseAutoGroup', 'ExposeRatioEnabled'].includes(item.key)) {
+          newInputs[item.key] = toBoolean(item.value);
         } else {
-            showError(message);
+          newInputs[item.key] = item.value;
         }
-    };
+      });
+      setInputs(newInputs);
+    } else {
+      showError(message);
+    }
+  };
 
-    const onRefresh = async () => {
-        try {
-            setLoading(true);
-            await getOptions();
-        } catch (error) {
-            showError('刷新失败');
-        } finally {
-            setLoading(false);
-        }
-    };
+  const onRefresh = async () => {
+    try {
+      setLoading(true);
+      await getOptions();
+    } catch (error) {
+      showError('刷新失败');
+    } finally {
+      setLoading(false);
+    }
+  };
 
-    useEffect(() => {
-        onRefresh();
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
+  useEffect(() => {
+    onRefresh();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
-    return (
-        <Spin spinning={loading} size='large'>
-            {/* 模型倍率设置以及可视化编辑器 */}
-            <Card style={{ marginTop: '10px' }}>
-                <Tabs type='card'>
-                    <Tabs.TabPane tab={t('模型倍率设置')} itemKey='model'>
-                        <ModelRatioSettings options={inputs} refresh={onRefresh} />
-                    </Tabs.TabPane>
-                    <Tabs.TabPane tab={t('分组倍率设置')} itemKey='group'>
-                        <GroupRatioSettings options={inputs} refresh={onRefresh} />
-                    </Tabs.TabPane>
-                    <Tabs.TabPane tab={t('可视化倍率设置')} itemKey='visual'>
-                        <ModelSettingsVisualEditor options={inputs} refresh={onRefresh} />
-                    </Tabs.TabPane>
-                    <Tabs.TabPane tab={t('未设置倍率模型')} itemKey='unset_models'>
-                        <ModelRatioNotSetEditor options={inputs} refresh={onRefresh} />
-                    </Tabs.TabPane>
-                    <Tabs.TabPane tab={t('上游倍率同步')} itemKey='upstream_sync'>
-                        <UpstreamRatioSync options={inputs} refresh={onRefresh} />
-                    </Tabs.TabPane>
-                    <Tabs.TabPane tab={t('视频倍率设置')} itemKey='video_ration'>
-                        <VideoRation options={inputs} refresh={onRefresh} />
-                    </Tabs.TabPane>
-                </Tabs>
-            </Card>
-        </Spin>
-    );
+  return (
+    <Spin spinning={loading} size='large'>
+      {/* 模型倍率设置以及可视化编辑器 */}
+      <Card style={{ marginTop: '10px' }}>
+        <Tabs type='card' activeKey={activeTab} onChange={setActiveTab}>
+          <Tabs.TabPane tab={t('模型倍率设置')} itemKey='model'>
+            <ModelRatioSettings options={inputs} refresh={onRefresh} />
+          </Tabs.TabPane>
+          <Tabs.TabPane tab={t('分组倍率设置')} itemKey='group'>
+            <GroupRatioSettings options={inputs} refresh={onRefresh} />
+          </Tabs.TabPane>
+          <Tabs.TabPane tab={t('可视化倍率设置')} itemKey='visual'>
+            <ModelSettingsVisualEditor options={inputs} refresh={onRefresh} />
+          </Tabs.TabPane>
+          <Tabs.TabPane tab={t('未设置倍率模型')} itemKey='unset_models'>
+            <ModelRatioNotSetEditor options={inputs} refresh={onRefresh} />
+          </Tabs.TabPane>
+          <Tabs.TabPane tab={t('上游倍率同步')} itemKey='upstream_sync'>
+            <UpstreamRatioSync options={inputs} refresh={onRefresh} />
+          </Tabs.TabPane>
+          <Tabs.TabPane tab={t('视频倍率设置')} itemKey='video_ration'>
+            {activeTab === 'video_ration' && (
+              <VideoRation options={inputs} refresh={onRefresh} />
+            )}
+          </Tabs.TabPane>
+        </Tabs>
+      </Card>
+    </Spin>
+  );
 };
 
 export default RatioSetting;

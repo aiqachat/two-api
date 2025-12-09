@@ -1,12 +1,13 @@
 import { deerService, WsError } from '@helpers';
 
-const getWsVideoRationPageList = async ({ modeName, resolution, price }) => {
+const getWsVideoRationPageList = async ({ pageSize, pageNumber }) => {
   try {
     const res = await deerService.getPageList('/api/ws/video-ratio/page', {
-      page_size: 10000,
+      pageSize,
+      pageNumber,
     });
     WsError.checkApiResult(res);
-    return res.data
+    return res.data;
   } catch (e) {
     WsError.handleError(e);
     return [];

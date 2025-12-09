@@ -7,10 +7,18 @@ const get = async (url, data) => {
 };
 
 // 获取分页列表
-const getPageList = async (url, data) => {
-  if (data.page_size === undefined) data.page_size = 10;
-  if (data.p === undefined) data.p = 1;
-  return get(url, data);
+const getPageList = async (url, { pageSize, pageNumber, ...data }) => {
+  data.page_size = pageSize || 10;
+  data.p = pageNumber || 1;
+  const res = await get(url, data);
+  const { items, page_size, total, page } = res.data;
+  Object.assign(res.data, {
+    list: items,
+    total,
+    pageSize: page_size,
+    pageNumber: page,
+  });
+  return res;
 };
 
 const post = async (url, data) => {

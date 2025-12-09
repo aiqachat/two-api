@@ -123,7 +123,7 @@ export function showError(error) {
       switch (error.response.status) {
         case 401:
           if(location.host === 'localhost:5173') {
-            wsDev.autoLogin()
+            wsDev.autoLogin().then()
           } else {
             // 清除用户状态
             localStorage.removeItem('user');
