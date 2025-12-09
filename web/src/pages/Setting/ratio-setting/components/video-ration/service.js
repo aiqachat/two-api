@@ -1,18 +1,18 @@
 import { deerService, WsError } from '@helpers';
 
-const createWsVideoRation = async ({ modeName, resolution, price }) => {
+const getWsVideoRationPageList = async ({ modeName, resolution, price }) => {
   try {
-    const res = await deerService.post('/api/ws/video-ratio/create', {
-      modeName,
-      resolution,
-      price,
+    const res = await deerService.getPageList('/api/ws/video-ratio/page', {
+      page_size: 10000,
     });
-    WsError.checkApiResult(res)
+    WsError.checkApiResult(res);
+    return res.data
   } catch (e) {
-    WsError.handleError(e)
+    WsError.handleError(e);
+    return [];
   }
 };
 
 export default {
-  createWsVideoRation
-}
+  getWsVideoRationPageList,
+};

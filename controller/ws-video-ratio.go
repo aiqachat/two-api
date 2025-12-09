@@ -1,22 +1,25 @@
 package controller
 
 import (
-	"net/http"
-
 	"github.com/QuantumNous/new-api/common"
 	"github.com/QuantumNous/new-api/model"
 	"github.com/gin-gonic/gin"
 )
 
-// WsVideoRatioList 视频倍率配置列表
-func WsVideoRatioList(c *gin.Context) {
+// 视频倍率配置列表
+func WsVideoRatioPageList(c *gin.Context) {
+	pageInfo := common.GetPageQuery(c)
+	items, total, err := model.WsVideoRatioPageList(pageInfo)
+	if err != nil {
+		common.ApiError(c, err)
+		return
+	}
 
-	c.JSON(http.StatusOK, gin.H{
-		"success": true,
-		"data": gin.H{
-			"missing": 333,
-		},
-	})
+	pageInfo.SetTotal(int(total))
+	pageInfo.SetItems(items)
+
+	common.ApiSuccess(c, pageInfo)
+	return
 }
 
 type WsVideoRatioCreateParams struct {

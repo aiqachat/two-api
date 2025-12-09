@@ -14,11 +14,12 @@ const createWsVideoRation = async ({ modelName, ...config }) => {
 
 const getResolutionOptionsList = async () => {
   try {
-    const res = await deerService.post('/api/ws/video-ratio/resolutionList', {
-      page_size: 10000,
-    });
+    const res = await deerService.post(
+      '/api/ws/video-ratio/resolutionList',
+      {},
+    );
     WsError.checkApiResult(res);
-    return res.data.items
+    return res.data.items;
   } catch (e) {
     WsError.handleError(e);
     return [];

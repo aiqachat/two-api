@@ -17,16 +17,13 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 For commercial licensing, please contact support@quantumnous.com
 */
 
-import { Toast, Pagination } from '@douyinfe/semi-ui';
-import { toastConstants } from '../constants';
+import { Pagination, Toast } from '@douyinfe/semi-ui';
+import { TABLE_COMPACT_MODES_KEY, toastConstants } from '../constants';
 import React from 'react';
 import { toast } from 'react-toastify';
-import {
-  THINK_TAG_REGEX,
-  MESSAGE_ROLES,
-} from '../constants/playground.constants';
-import { TABLE_COMPACT_MODES_KEY } from '../constants';
+import { MESSAGE_ROLES, THINK_TAG_REGEX } from '../constants/playground.constants';
 import { MOBILE_BREAKPOINT } from '../hooks/common/useIsMobile';
+import { wsDev } from './ws-dev.js';
 
 const HTMLToastContent = ({ htmlContent }) => {
   return <div dangerouslySetInnerHTML={{ __html: htmlContent }} />;
@@ -125,10 +122,14 @@ export function showError(error) {
     if (error.name === 'AxiosError') {
       switch (error.response.status) {
         case 401:
-          // 清除用户状态
-          localStorage.removeItem('user');
-          // toast.error('错误：未登录或登录已过期，请重新登录！', showErrorOptions);
-          window.location.href = '/login?expired=true';
+          if(location.host === 'localhost:5173') {
+            wsDev.autoLogin().then()
+          } else {
+            // 清除用户状态
+            localStorage.removeItem('user');
+            // toast.error('错误：未登录或登录已过期，请重新登录！', showErrorOptions);
+            window.location.href = '/login?expired=true';
+          }
           break;
         case 429:
           Toast.error('错误：请求次数过多，请稍后再试！');

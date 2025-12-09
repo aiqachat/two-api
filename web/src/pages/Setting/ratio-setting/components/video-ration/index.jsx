@@ -9,7 +9,7 @@ export default function ModelSettingsVisualEditor(props) {
       <Button
         onClick={() => {
           editModal.open({}, () => {
-            console.log('#')
+            console.log('#');
           });
         }}
       >

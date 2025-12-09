@@ -23,7 +23,34 @@ var ResolutionList = []string{
 	"480p",
 }
 
-func WsVideoRatioCreateGetByModeName(modelName string) (*WsVideoRatio, error) {
+func WsVideoRatioPageList(pageInfo *common.PageInfo) (items []*WsVideoRatio, total int64, err error) {
+	tx := DB.Begin()
+	if tx.Error != nil {
+		return nil, 0, tx.Error
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			tx.Rollback()
+		}
+	}()
+	query := tx.Model(&WsVideoRatio{})
+
+	if err = query.Count(&total).Error; err != nil {
+		tx.Rollback()
+		return nil, 0, err
+	}
+
+	if err = tx.Unscoped().Order("id desc").Limit(pageInfo.GetPageSize()).Offset(pageInfo.GetStartIdx()).Find(&items).Error; err != nil {
+		tx.Rollback()
+		return nil, 0, err
+	}
+	if err = tx.Commit().Error; err != nil {
+		return nil, 0, err
+	}
+	return items, total, nil
+}
+
+func WsVideoRatioGetByModeName(modelName string) (*WsVideoRatio, error) {
 	if modelName == "" {
 		return nil, errors.New("模型名称不能为空")
 	}
@@ -36,7 +63,7 @@ func WsVideoRatioCreateGetByModeName(modelName string) (*WsVideoRatio, error) {
 	return &wsVideoRatio, err
 }
 
-func WsVideoRatioCreateGetById(id int) (*WsVideoRatio, error) {
+func WsVideoRatioGetById(id int) (*WsVideoRatio, error) {
 	if id == 0 {
 		return nil, errors.New("id 为空！")
 	}
@@ -56,7 +83,7 @@ func WsVideoRatioCreate(modelName string, config map[string]float64) (*WsVideoRa
 	if config == nil {
 		return nil, errors.New("分辨率不能为空")
 	}
-	current, err := WsVideoRatioCreateGetByModeName(modelName)
+	current, err := WsVideoRatioGetByModeName(modelName)
 	if current != nil {
 		return nil, errors.New("已存在模型'" + modelName + "'的视频配置")
 	}
