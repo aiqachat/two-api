@@ -337,6 +337,7 @@ func videoFetchByIDRespBodyBuilder(c *gin.Context) (respBody []byte, taskResp *d
 		if channelModel.GetBaseURL() != "" {
 			baseURL = channelModel.GetBaseURL()
 		}
+		proxy := channelModel.GetSetting().Proxy
 		adaptor := GetTaskAdaptor(constant.TaskPlatform(strconv.Itoa(channelModel.Type)))
 		if adaptor == nil {
 			return
@@ -344,7 +345,7 @@ func videoFetchByIDRespBodyBuilder(c *gin.Context) (respBody []byte, taskResp *d
 		resp, err2 := adaptor.FetchTask(baseURL, channelModel.Key, map[string]any{
 			"task_id": originTask.TaskID,
 			"action":  originTask.Action,
-		})
+		}, proxy)
 		if err2 != nil || resp == nil {
 			return
 		}
