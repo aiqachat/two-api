@@ -18,30 +18,19 @@ For commercial licensing, please contact support@quantumnous.com
 */
 
 import React from 'react';
+import { Avatar, Popover, Space, Tag, Tooltip, Typography } from '@douyinfe/semi-ui';
 import {
-  Avatar,
-  Space,
-  Tag,
-  Tooltip,
-  Popover,
-  Typography,
-} from '@douyinfe/semi-ui';
-import {
-  timestamp2string,
+  getLogOther,
   renderGroup,
+  renderModelPriceSimple,
+  renderModelTag,
   renderQuota,
   stringToColor,
-  getLogOther,
-  renderModelTag,
-  renderClaudeLogContent,
-  renderLogContent,
-  renderModelPriceSimple,
-  renderAudioModelPrice,
-  renderClaudeModelPrice,
-  renderModelPrice,
+  timestamp2string
 } from '../../../helpers';
 import { IconHelpCircle } from '@douyinfe/semi-icons';
 import { Route } from 'lucide-react';
+import { renderVideoRatioInfo } from './utils';
 
 const colors = [
   'amber',
@@ -525,6 +514,9 @@ export const getLogsColumns = ({
       fixed: 'right',
       render: (text, record, index) => {
         let other = getLogOther(record.other);
+        if (other?.video_model_ratio_info) {
+          return renderVideoRatioInfo(other.video_model_ratio_info);
+        }
         if (other == null || record.type !== 2) {
           return (
             <Typography.Paragraph
@@ -552,9 +544,13 @@ export const getLogsColumns = ({
               other.cache_creation_tokens || 0,
               other.cache_creation_ratio || 1.0,
               other.cache_creation_tokens_5m || 0,
-              other.cache_creation_ratio_5m || other.cache_creation_ratio || 1.0,
+              other.cache_creation_ratio_5m ||
+                other.cache_creation_ratio ||
+                1.0,
               other.cache_creation_tokens_1h || 0,
-              other.cache_creation_ratio_1h || other.cache_creation_ratio || 1.0,
+              other.cache_creation_ratio_1h ||
+                other.cache_creation_ratio ||
+                1.0,
               false,
               1.0,
               other?.is_system_prompt_overwritten,

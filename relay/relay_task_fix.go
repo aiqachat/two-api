@@ -12,12 +12,13 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/goccy/go-json"
 	"github.com/pkg/errors"
+	"github.com/shopspring/decimal"
 )
 
 type VideoModelRatioInfo struct {
 	ModelName      string  `json:"model_name"`
 	Resolution     string  `json:"resolution"`
-	Duration       int     `json:"duration"`
+	Duration       int64   `json:"duration"`
 	UserGroupRatio float64 `json:"user_group_ratio"`
 	// 每秒单价
 	Price float64 `json:"price"`
@@ -85,7 +86,7 @@ func loadVideoInfo(c *gin.Context, info *VideoModelRatioInfo) error {
 		return err
 	}
 	info.Resolution = result["resolution"]
-	info.Duration = duration
+	info.Duration = int64(duration)
 	return nil
 }
 
@@ -126,6 +127,10 @@ func HandleVideoModelRatio(
 	videoInfo.UserGroupRatio = userGroupRatio
 	// =========================================== 获取用户分组倍率
 	videoInfo.PriceTotal = videoInfo.Price * float64(videoInfo.Duration) * videoInfo.UserGroupRatio
+	res := decimal.NewFromFloat(videoInfo.UserGroupRatio)
+	res = res.Mul(decimal.NewFromFloat(videoInfo.Price))
+	res = res.Mul(decimal.NewFromInt(videoInfo.Duration))
+	videoInfo.PriceTotal, _ = res.Float64()
 	println(fmt.Sprintf(
 		"视频分辨率: %s, 视频秒数: %d, 分辨率每秒价格: %.4f, 用户分组倍率: %.4f, 结果倍率: %.4f",
 		videoInfo.Resolution, videoInfo.Duration, videoInfo.Price, userGroupRatio, videoInfo.PriceTotal,

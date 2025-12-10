@@ -17,28 +17,27 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 For commercial licensing, please contact support@quantumnous.com
 */
 
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Modal } from '@douyinfe/semi-ui';
 import {
   API,
+  copy,
+  getLogOther,
   getTodayStartTimestamp,
   isAdmin,
+  renderAudioModelPrice,
+  renderClaudeLogContent,
+  renderClaudeModelPrice,
+  renderLogContent,
+  renderModelPrice,
   showError,
   showSuccess,
-  timestamp2string,
-  renderQuota,
-  renderNumber,
-  getLogOther,
-  copy,
-  renderClaudeLogContent,
-  renderLogContent,
-  renderAudioModelPrice,
-  renderClaudeModelPrice,
-  renderModelPrice,
-} from '../../helpers';
-import { ITEMS_PER_PAGE } from '../../constants';
-import { useTableCompactMode } from '../common/useTableCompactMode';
+  timestamp2string
+} from '@helpers';
+import { ITEMS_PER_PAGE } from '@constants';
+import { useTableCompactMode } from '@hooks/common/useTableCompactMode.js';
+import { fixDescriptionsCalculateProcess, fixDescriptionsLogDetails } from '../utils';
 
 export const useLogsData = () => {
   const { t } = useTranslation();
@@ -352,34 +351,41 @@ export const useLogsData = () => {
       if (logs[i].type === 2) {
         expandDataLocal.push({
           key: t('日志详情'),
-          value: other?.claude
-            ? renderClaudeLogContent(
-                other?.model_ratio,
-                other.completion_ratio,
-                other.model_price,
-                other.group_ratio,
-                other?.user_group_ratio,
-                other.cache_ratio || 1.0,
-                other.cache_creation_ratio || 1.0,
-                other.cache_creation_tokens_5m || 0,
-                other.cache_creation_ratio_5m || other.cache_creation_ratio || 1.0,
-                other.cache_creation_tokens_1h || 0,
-                other.cache_creation_ratio_1h || other.cache_creation_ratio || 1.0,
-              )
-            : renderLogContent(
-                other?.model_ratio,
-                other.completion_ratio,
-                other.model_price,
-                other.group_ratio,
-                other?.user_group_ratio,
-                other.cache_ratio || 1.0,
-                false,
-                1.0,
-                other.web_search || false,
-                other.web_search_call_count || 0,
-                other.file_search || false,
-                other.file_search_call_count || 0,
-              ),
+          value: fixDescriptionsLogDetails(
+            other,
+            other?.claude
+              ? renderClaudeLogContent(
+                  other?.model_ratio,
+                  other.completion_ratio,
+                  other.model_price,
+                  other.group_ratio,
+                  other?.user_group_ratio,
+                  other.cache_ratio || 1.0,
+                  other.cache_creation_ratio || 1.0,
+                  other.cache_creation_tokens_5m || 0,
+                  other.cache_creation_ratio_5m ||
+                    other.cache_creation_ratio ||
+                    1.0,
+                  other.cache_creation_tokens_1h || 0,
+                  other.cache_creation_ratio_1h ||
+                    other.cache_creation_ratio ||
+                    1.0,
+                )
+              : renderLogContent(
+                  other?.model_ratio,
+                  other.completion_ratio,
+                  other.model_price,
+                  other.group_ratio,
+                  other?.user_group_ratio,
+                  other.cache_ratio || 1.0,
+                  false,
+                  1.0,
+                  other.web_search || false,
+                  other.web_search_call_count || 0,
+                  other.file_search || false,
+                  other.file_search_call_count || 0,
+                ),
+          ),
         });
         if (logs[i]?.content) {
           expandDataLocal.push({
@@ -467,7 +473,7 @@ export const useLogsData = () => {
         }
         expandDataLocal.push({
           key: t('计费过程'),
-          value: content,
+          value: fixDescriptionsCalculateProcess(other, content),
         });
         if (other?.reasoning_effort) {
           expandDataLocal.push({
@@ -490,8 +496,8 @@ export const useLogsData = () => {
           localCountMode = t('上游返回');
         }
         expandDataLocal.push({
-            key: t('计费模式'),
-            value: localCountMode,
+          key: t('计费模式'),
+          value: localCountMode,
         });
       }
       expandDatesLocal[logs[i].key] = expandDataLocal;
