@@ -15,7 +15,5 @@ export const fixDescriptionsCalculateProcess = (info, source) => {
     return source;
   }
   const { price, user_group_ratio, duration, resolution, price_total } = details;
-  console.log('------');
-  console.log(details);
   return `分组倍率：${user_group_ratio} * 分辨率(${resolution})价格：$${price} * 视频秒数：${duration} = $${price_total}`;
 };

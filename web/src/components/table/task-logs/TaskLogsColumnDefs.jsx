@@ -20,27 +20,28 @@ For commercial licensing, please contact support@quantumnous.com
 import React from 'react';
 import { Progress, Space, Tag, Typography } from '@douyinfe/semi-ui';
 import {
-  Music,
-  FileText,
-  HelpCircle,
   CheckCircle,
-  Pause,
   Clock,
-  Play,
-  XCircle,
-  Loader,
-  List,
+  FileText,
   Hash,
-  Video,
+  HelpCircle,
+  List,
+  Loader,
+  Music,
+  Pause,
+  Play,
   Sparkles,
+  Video,
+  XCircle
 } from 'lucide-react';
 import {
   TASK_ACTION_FIRST_TAIL_GENERATE,
   TASK_ACTION_GENERATE,
   TASK_ACTION_REFERENCE_GENERATE,
-  TASK_ACTION_TEXT_GENERATE,
+  TASK_ACTION_TEXT_GENERATE
 } from '../../../constants/common.constant';
 import { CHANNEL_OPTIONS } from '../../../constants/channel.constants';
+import { getVideoDownloadUrl } from './utils';
 
 const colors = [
   'amber',
@@ -364,6 +365,7 @@ export const getTaskLogsColumns = ({
         const isUrl = typeof text === 'string' && /^https?:\/\//.test(text);
         if (isSuccess && isVideoTask && isUrl) {
           const videoUrl = `/v1/videos/${record.task_id}/content`;
+          const downloadUrl = getVideoDownloadUrl(record.data)
           return (
             <Space>
               <a
@@ -376,7 +378,7 @@ export const getTaskLogsColumns = ({
                 {t('点击预览视频')}
               </a>
               <a
-                href={record.data.content.video_url}
+                href={downloadUrl}
                 target='_blank'
               >
                 {t('点击下载视频')}
