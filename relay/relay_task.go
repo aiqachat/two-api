@@ -319,7 +319,7 @@ func videoFetchByIDRespBodyBuilder(c *gin.Context) (respBody []byte, taskResp *d
 		if err2 != nil {
 			return
 		}
-		if channelModel.Type != constant.ChannelTypeVertexAi && channelModel.Type != constant.ChannelTypeGemini {
+		if channelModel.Type != constant.ChannelTypeVertexAi && channelModel.Type != constant.ChannelTypeGemini && channelModel.Type != constant.ChannelTypeJimeng {
 			return
 		}
 		baseURL := constant.ChannelBaseURLs[channelModel.Type]
@@ -330,10 +330,16 @@ func videoFetchByIDRespBodyBuilder(c *gin.Context) (respBody []byte, taskResp *d
 		if adaptor == nil {
 			return
 		}
-		resp, err2 := adaptor.FetchTask(baseURL, channelModel.Key, map[string]any{
+		// 构建 FetchTask 的 body，包含 task_id、action 和任务数据（用于读取 req_key）
+		fetchBody := map[string]any{
 			"task_id": originTask.TaskID,
 			"action":  originTask.Action,
-		})
+		}
+		// 对于 jimeng，传递任务数据以便读取 req_key
+		if channelModel.Type == constant.ChannelTypeJimeng && len(originTask.Data) > 0 {
+			fetchBody["task_data"] = originTask.Data
+		}
+		resp, err2 := adaptor.FetchTask(baseURL, channelModel.Key, fetchBody)
 		if err2 != nil || resp == nil {
 			return
 		}
