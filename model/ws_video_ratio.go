@@ -85,7 +85,7 @@ func WsVideoRatioPageList(
 	return list, total, nil
 }
 
-func WsVideoRatioGetByModeName(modelName string) (*WsVideoRatio, error) {
+func WsVideoRatioGetByModeName(modelName string) (*WsVideoRatioMap, error) {
 	if modelName == "" {
 		return nil, errors.New("模型名称不能为空")
 	}
@@ -95,7 +95,8 @@ func WsVideoRatioGetByModeName(modelName string) (*WsVideoRatio, error) {
 	if err != nil {
 		return nil, err
 	}
-	return &wsVideoRatio, err
+	m, err := WsVideoRatio2map(wsVideoRatio)
+	return &m, err
 }
 
 func WsVideoRatioGetById(id int) (*WsVideoRatioMap, error) {

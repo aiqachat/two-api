@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/QuantumNous/new-api/common"
+	"github.com/QuantumNous/new-api/model"
 	relaycommon "github.com/QuantumNous/new-api/relay/common"
 	"github.com/QuantumNous/new-api/setting/ratio_setting"
 	"github.com/gin-gonic/gin"
@@ -71,18 +72,25 @@ func getVideoInfo(c *gin.Context) (map[string]string, error) {
 	return result, nil
 }
 
-// 视频模型价格倍率
-var videoModelRatioMap = map[string]float64{
-	"480p":  0.05,
-	"720p":  0.10,
-	"1080p": 0.15,
-}
-
 // HandleVideoModelRatio 处理视频模型价格比例
 func HandleVideoModelRatio(
 	c *gin.Context,
 	info *relaycommon.RelayInfo,
 	ratio float64) (float64, error) {
+	// =========================================== 获取视频配置
+	modelName := info.OriginModelName
+	if modelName == "" {
+		return 0, errors.New("未获取到模型名称")
+	}
+	videoRatio, err := model.WsVideoRatioGetByModeName(modelName)
+	if err != nil {
+		return 0, err
+	}
+	if videoRatio == nil {
+		return ratio, nil
+	}
+	config := videoRatio.Config
+	// =========================================== 获取视频配置
 	// =========================================== 获取视频参数
 	videoInfo, err := getVideoInfo(c)
 	if err != nil {
@@ -93,23 +101,21 @@ func HandleVideoModelRatio(
 	if err != nil {
 		return 0, err
 	}
-	resolutionRatio, ok := videoModelRatioMap[resolution]
+	resolutionRatio, ok := config[resolution]
 	if !ok {
 		return 0, errors.New(fmt.Sprintf("不支持的视频分辨率：%s", resolution))
 	}
 	// =========================================== 获取视频参数
-	modelName := info.OriginModelName
-	if modelName == "" {
-		return 0, errors.New("未获取到模型名称")
-	}
 	// =========================================== 获取用户分组倍率
 	userGroupRatio, hasUserGroupRatio := ratio_setting.GetGroupGroupRatio(info.UserGroup, info.UsingGroup)
 	if !hasUserGroupRatio {
 		userGroupRatio = ratio_setting.GetGroupRatio(info.UsingGroup)
 	}
-	fmt.Println(userGroupRatio)
 	// =========================================== 获取用户分组倍率
 	resultRatio := resolutionRatio * float64(duration) * userGroupRatio
-	println(fmt.Sprintf("视频分辨率: %s, 视频秒数: %d, 分辨率每秒价格: %.4f, 结果倍率: %.4f", resolution, duration, resolutionRatio, resultRatio))
+	println(fmt.Sprintf(
+		"视频分辨率: %s, 视频秒数: %d, 分辨率每秒价格: %.4f, 用户分组倍率: %.4f, 结果倍率: %.4f",
+		resolution, duration, resolutionRatio, userGroupRatio, resultRatio,
+	))
 	return resultRatio, nil
 }
