@@ -26,6 +26,7 @@ type ContentItem struct {
 	Type     string    `json:"type"`                // "text" or "image_url"
 	Text     string    `json:"text,omitempty"`      // for text type
 	ImageURL *ImageURL `json:"image_url,omitempty"` // for image_url type
+	Role     string    `json:"role,omitempty"`      // "first_frame" or "last_frame" for image_url type
 }
 
 type ImageURL struct {
@@ -192,15 +193,69 @@ func (a *TaskAdaptor) convertToRequestPayload(req *relaycommon.TaskSubmitReq) (*
 		})
 	}
 
+	// Handle metadata for image roles
+	metadata := req.Metadata
+	var firstFrameURL, lastFrameURL string
+	if metadata != nil {
+		if v, ok := metadata["first_frame_url"].(string); ok {
+			firstFrameURL = v
+		}
+		if v, ok := metadata["last_frame_url"].(string); ok {
+			lastFrameURL = v
+		}
+	}
+
 	// Add images if present
 	if req.HasImage() {
-		for _, imgURL := range req.Images {
-			r.Content = append(r.Content, ContentItem{
-				Type: "image_url",
-				ImageURL: &ImageURL{
-					URL: imgURL,
-				},
-			})
+		// 如果在 metadata 中明确指定了 first_frame_url 和 last_frame_url
+		if firstFrameURL != "" || lastFrameURL != "" {
+			// 使用 metadata 中的 URL
+			if firstFrameURL != "" {
+				r.Content = append(r.Content, ContentItem{
+					Type: "image_url",
+					ImageURL: &ImageURL{
+						URL: firstFrameURL,
+					},
+					Role: "first_frame",
+				})
+			}
+			if lastFrameURL != "" {
+				r.Content = append(r.Content, ContentItem{
+					Type: "image_url",
+					ImageURL: &ImageURL{
+						URL: lastFrameURL,
+					},
+					Role: "last_frame",
+				})
+			}
+		} else {
+			// 自动判断：如果有2张图片，第一张作为 first_frame，第二张作为 last_frame
+			if len(req.Images) == 2 {
+				r.Content = append(r.Content, ContentItem{
+					Type: "image_url",
+					ImageURL: &ImageURL{
+						URL: req.Images[0],
+					},
+					Role: "first_frame",
+				})
+				r.Content = append(r.Content, ContentItem{
+					Type: "image_url",
+					ImageURL: &ImageURL{
+						URL: req.Images[1],
+					},
+					Role: "last_frame",
+				})
+			} else {
+				// 只有1张图片或多于2张图片时，不指定 role（由API自动判断）
+				for _, imgURL := range req.Images {
+					r.Content = append(r.Content, ContentItem{
+						Type: "image_url",
+						ImageURL: &ImageURL{
+							URL: imgURL,
+						},
+					})
+				}
+			}
 		}
 	}
 

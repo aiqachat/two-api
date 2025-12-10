@@ -105,18 +105,47 @@ func ImageHelper(c *gin.Context, info *relaycommon.RelayInfo) (newAPIError *type
 		}
 	}
 
-	usage, newAPIError := adaptor.DoResponse(c, httpResp, info)
+	usageAny, newAPIError := adaptor.DoResponse(c, httpResp, info)
 	if newAPIError != nil {
 		// reset status code 重置状态码
 		service.ResetStatusCode(newAPIError, statusCodeMappingStr)
 		return newAPIError
 	}
 
-	if usage.(*dto.Usage).TotalTokens == 0 {
-		usage.(*dto.Usage).TotalTokens = int(request.N)
+	usage := usageAny.(*dto.Usage)
+
+	// Determine effective generated image count:
+	// - default to request.N
+	// - if upstream provides usage.GeneratedImages, trust that as the actual count.
+	effectiveImages := int(request.N)
+	if usage.GeneratedImages > 0 {
+		effectiveImages = usage.GeneratedImages
 	}
-	if usage.(*dto.Usage).PromptTokens == 0 {
-		usage.(*dto.Usage).PromptTokens = int(request.N)
+	if effectiveImages <= 0 {
+		effectiveImages = 1
+	}
+
+	// When model_price is configured (UsePrice == true), we normally pre-multiply it by
+	// ImagePriceRatio (= N for image APIs). For providers that return usage.generated_images,
+	// we want to bill per *actual* generated image count instead of just request.N.
+	//
+	// Adjust PriceData.ModelPrice from:
+	//   basePrice * N  ->  basePrice * GeneratedImages
+	// so that final quota = model_price * group_ratio * QuotaPerUnit
+	if info.PriceData.UsePrice && usage.GeneratedImages > 0 {
+		n := int(request.N)
+		if n <= 0 {
+			n = 1
+		}
+		scale := float64(effectiveImages) / float64(n)
+		info.PriceData.ModelPrice = info.PriceData.ModelPrice * scale
+	}
+
+	if usage.TotalTokens == 0 {
+		usage.TotalTokens = effectiveImages
+	}
+	if usage.PromptTokens == 0 {
+		usage.PromptTokens = effectiveImages
 	}
 
 	quality := "standard"
@@ -127,9 +156,9 @@ func ImageHelper(c *gin.Context, info *relaycommon.RelayInfo) (newAPIError *type
 	var logContent string
 
 	if len(request.Size) > 0 {
-		logContent = fmt.Sprintf("大小 %s, 品质 %s, 张数 %d", request.Size, quality, request.N)
+		logContent = fmt.Sprintf("大小 %s, 品质 %s, 张数 %d", request.Size, quality, effectiveImages)
 	}
 
-	postConsumeQuota(c, info, usage.(*dto.Usage), logContent)
+	postConsumeQuota(c, info, usage, logContent)
 	return nil
 }

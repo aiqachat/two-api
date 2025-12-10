@@ -4,6 +4,7 @@
 upload
 *.exe
 *.db
+*.tar
 build
 *.db-journal
 logs
@@ -21,7 +22,8 @@ web/bun.lock
 
 electron/node_modules
 electron/dist
-data/
+build_and_save.bat
+
 
 test.go
 dump.rdb

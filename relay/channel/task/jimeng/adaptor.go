@@ -49,6 +49,7 @@ type responsePayload struct {
 	Data      struct {
 		TaskID string `json:"task_id"`
 	} `json:"data"`
+	ReqKey string `json:"req_key,omitempty"` // 保存创建任务时使用的 req_key，用于后续查询任务状态
 }
 
 type responseTask struct {
@@ -200,6 +201,25 @@ func (a *TaskAdaptor) DoResponse(c *gin.Context, resp *http.Response, info *rela
 		return
 	}
 
+	// 获取创建任务时使用的 req_key，并保存到响应数据中
+	var reqKey string
+	if v, exists := c.Get("task_request"); exists {
+		if req, ok := v.(relaycommon.TaskSubmitReq); ok {
+			if payload, err := a.convertToRequestPayload(&req); err == nil {
+				reqKey = payload.ReqKey
+			}
+		}
+	}
+
+	// 将 req_key 添加到响应数据中
+	if reqKey != "" {
+		var responseData map[string]interface{}
+		if err := json.Unmarshal(responseBody, &responseData); err == nil {
+			responseData["req_key"] = reqKey
+			responseBody, _ = json.Marshal(responseData)
+		}
+	}
+
 	ov := dto.NewOpenAIVideo()
 	ov.ID = jResp.Data.TaskID
 	ov.TaskID = jResp.Data.TaskID
@@ -216,12 +236,39 @@ func (a *TaskAdaptor) FetchTask(baseUrl, key string, body map[string]any, proxy 
 		return nil, fmt.Errorf("invalid task_id")
 	}
 
+	// 从 body 中获取 req_key，如果没有则尝试从任务数据中读取
+	reqKey, ok := body["req_key"].(string)
+	if !ok || reqKey == "" {
+		// 如果没有提供 req_key，尝试从任务数据中读取
+		if taskDataRaw, ok := body["task_data"]; ok {
+			var taskData []byte
+			switch v := taskDataRaw.(type) {
+			case []byte:
+				taskData = v
+			case json.RawMessage:
+				taskData = []byte(v)
+			case string:
+				taskData = []byte(v)
+			}
+			if len(taskData) > 0 {
+				var taskResp responsePayload
+				if err := json.Unmarshal(taskData, &taskResp); err == nil && taskResp.ReqKey != "" {
+					reqKey = taskResp.ReqKey
+				}
+			}
+		}
+		// 如果仍然没有，使用默认值（向后兼容）
+		if reqKey == "" {
+			reqKey = "jimeng_vgfm_t2v_l20"
+		}
+	}
+
 	uri := fmt.Sprintf("%s/?Action=CVSync2AsyncGetResult&Version=2022-08-31", baseUrl)
 	if isNewAPIRelay(key) {
 		uri = fmt.Sprintf("%s/jimeng/?Action=CVSync2AsyncGetResult&Version=2022-08-31", a.baseURL)
 	}
 	payload := map[string]string{
-		"req_key": "jimeng_vgfm_t2v_l20", // This is fixed value from doc: https://www.volcengine.com/docs/85621/1544774
+		"req_key": reqKey,
 		"task_id": taskID,
 	}
 	payloadBytes, err := json.Marshal(payload)

@@ -83,6 +83,7 @@ type TaskDto struct {
 	Action     string          `json:"action"`  // 任务类型, song, lyrics, description-mode
 	Status     string          `json:"status"`  // 任务状态, submitted, queueing, processing, success, failed
 	FailReason string          `json:"fail_reason"`
+	Url        string          `json:"url,omitempty"` // 成功时的资源 URL (视频/图片/音频)
 	SubmitTime int64           `json:"submit_time"`
 	StartTime  int64           `json:"start_time"`
 	FinishTime int64           `json:"finish_time"`

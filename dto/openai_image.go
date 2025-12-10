@@ -26,6 +26,9 @@ type ImageRequest struct {
 	OutputFormat      json.RawMessage `json:"output_format,omitempty"`
 	OutputCompression json.RawMessage `json:"output_compression,omitempty"`
 	PartialImages     json.RawMessage `json:"partial_images,omitempty"`
+	// sequential image generation (Doubao Seedream)
+	SequentialImageGeneration        string          `json:"sequential_image_generation,omitempty"`
+	SequentialImageGenerationOptions json.RawMessage `json:"sequential_image_generation_options,omitempty"`
 	// Stream            bool            `json:"stream,omitempty"`
 	Watermark *bool `json:"watermark,omitempty"`
 	// zhipu 4v
@@ -172,7 +175,7 @@ type ImageResponse struct {
 	Extra   any         `json:"extra,omitempty"`
 }
 type ImageData struct {
-	Url           string `json:"url"`
-	B64Json       string `json:"b64_json"`
-	RevisedPrompt string `json:"revised_prompt"`
+	Url           string `json:"url,omitempty"`
+	B64Json       string `json:"b64_json,omitempty"`
+	RevisedPrompt string `json:"revised_prompt,omitempty"`
 }

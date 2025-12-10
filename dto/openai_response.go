@@ -225,6 +225,10 @@ type Usage struct {
 	TotalTokens          int `json:"total_tokens"`
 	PromptCacheHitTokens int `json:"prompt_cache_hit_tokens,omitempty"`
 
+	// For image APIs (e.g. Doubao Seedream), upstream may return generated_images inside usage.
+	// We use this to support per-generated-image billing when model_price is configured.
+	GeneratedImages int `json:"generated_images,omitempty"`
+
 	PromptTokensDetails    InputTokenDetails  `json:"prompt_tokens_details"`
 	CompletionTokenDetails OutputTokenDetails `json:"completion_tokens_details"`
 	InputTokens            int                `json:"input_tokens"`

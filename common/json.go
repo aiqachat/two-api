@@ -19,7 +19,15 @@ func DecodeJson(reader io.Reader, v any) error {
 }
 
 func Marshal(v any) ([]byte, error) {
-	return json.Marshal(v)
+	buffer := &bytes.Buffer{}
+	encoder := json.NewEncoder(buffer)
+	encoder.SetEscapeHTML(false) // 禁用 HTML 转义，防止 URL 中的 & 被转义为 \u0026
+	err := encoder.Encode(v)
+	if err != nil {
+		return nil, err
+	}
+	// 移除 encoder.Encode 添加的换行符
+	return bytes.TrimRight(buffer.Bytes(), "\n"), nil
 }
 
 func GetJsonType(data json.RawMessage) string {
