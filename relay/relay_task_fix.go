@@ -14,6 +14,17 @@ import (
 	"github.com/pkg/errors"
 )
 
+type VideoModelRatioInfo struct {
+	ModelName      string  `json:"model_name"`
+	Resolution     string  `json:"resolution"`
+	Duration       int     `json:"duration"`
+	UserGroupRatio float64 `json:"user_group_ratio"`
+	// 每秒单价
+	Price float64 `json:"price"`
+	// 总价
+	PriceTotal float64 `json:"price_total"`
+}
+
 func GetCurrentRequestBodyMap(c *gin.Context) (map[string]interface{}, error) {
 	body, err := common.GetRequestBody(c)
 	if err != nil {
@@ -46,15 +57,15 @@ func parseVideoParamsSplit(paramStr string) map[string]string {
 	return result
 }
 
-func getVideoInfo(c *gin.Context) (map[string]string, error) {
+func loadVideoInfo(c *gin.Context, info *VideoModelRatioInfo) error {
 	var result map[string]string
 	bodyMap, err := GetCurrentRequestBodyMap(c)
 	if err != nil {
-		return result, err
+		return err
 	}
 	str := bodyMap["prompt"]
 	if str == nil {
-		return result, errors.New("未获取到prompt内容")
+		return errors.New("未获取到prompt内容")
 	}
 	result = parseVideoParamsSplit(str.(string))
 	if result["rs"] != "" {
@@ -64,58 +75,60 @@ func getVideoInfo(c *gin.Context) (map[string]string, error) {
 		result["duration"] = result["dur"]
 	}
 	if _, ok := result["resolution"]; !ok {
-		return result, errors.New("视频分辨率不能为空")
+		return errors.New("视频分辨率不能为空")
 	}
 	if _, ok := result["duration"]; !ok {
-		return result, errors.New("视频时长(秒)不能为空")
+		return errors.New("视频时长(秒)不能为空")
 	}
-	return result, nil
+	duration, err := strconv.Atoi(result["duration"])
+	if err != nil {
+		return err
+	}
+	info.Resolution = result["resolution"]
+	info.Duration = duration
+	return nil
 }
 
 // HandleVideoModelRatio 处理视频模型价格比例
 func HandleVideoModelRatio(
 	c *gin.Context,
-	info *relaycommon.RelayInfo,
-	ratio float64) (float64, error) {
+	info *relaycommon.RelayInfo) (*VideoModelRatioInfo, error) {
 	// =========================================== 获取视频配置
 	modelName := info.OriginModelName
 	if modelName == "" {
-		return 0, errors.New("未获取到模型名称")
+		return nil, errors.New("未获取到模型名称")
 	}
-	videoRatio, err := model.WsVideoRatioGetByModeName(modelName)
-	if err != nil {
-		return 0, err
+	item, err := model.WsVideoRatioGetByModeName(modelName)
+	if err != nil || item == nil {
+		return nil, err
 	}
-	if videoRatio == nil {
-		return ratio, nil
-	}
-	config := videoRatio.Config
+	config := item.Config
 	// =========================================== 获取视频配置
 	// =========================================== 获取视频参数
-	videoInfo, err := getVideoInfo(c)
-	if err != nil {
-		return 0, err
+	videoInfo := &VideoModelRatioInfo{
+		ModelName: modelName,
 	}
-	resolution := videoInfo["resolution"]
-	duration, err := strconv.Atoi(videoInfo["duration"])
+	err = loadVideoInfo(c, videoInfo)
 	if err != nil {
-		return 0, err
+		return videoInfo, err
 	}
-	resolutionRatio, ok := config[resolution]
+	price, ok := config[videoInfo.Resolution]
 	if !ok {
-		return 0, errors.New(fmt.Sprintf("不支持的视频分辨率：%s", resolution))
+		return videoInfo, errors.New(fmt.Sprintf("不支持的视频分辨率：%s", videoInfo.Resolution))
 	}
+	videoInfo.Price = price
 	// =========================================== 获取视频参数
 	// =========================================== 获取用户分组倍率
 	userGroupRatio, hasUserGroupRatio := ratio_setting.GetGroupGroupRatio(info.UserGroup, info.UsingGroup)
 	if !hasUserGroupRatio {
 		userGroupRatio = ratio_setting.GetGroupRatio(info.UsingGroup)
 	}
+	videoInfo.UserGroupRatio = userGroupRatio
 	// =========================================== 获取用户分组倍率
-	resultRatio := resolutionRatio * float64(duration) * userGroupRatio
+	videoInfo.PriceTotal = videoInfo.Price * float64(videoInfo.Duration) * videoInfo.UserGroupRatio
 	println(fmt.Sprintf(
 		"视频分辨率: %s, 视频秒数: %d, 分辨率每秒价格: %.4f, 用户分组倍率: %.4f, 结果倍率: %.4f",
-		resolution, duration, resolutionRatio, userGroupRatio, resultRatio,
+		videoInfo.Resolution, videoInfo.Duration, videoInfo.Price, userGroupRatio, videoInfo.PriceTotal,
 	))
-	return resultRatio, nil
+	return videoInfo, nil
 }

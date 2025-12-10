@@ -83,9 +83,12 @@ func RelayTaskSubmit(c *gin.Context, info *relaycommon.RelayInfo) (taskErr *dto.
 		}
 	}
 	// FIXME: 处理视频模型价格
-	ratio, err := HandleVideoModelRatio(c, info, ratio)
-	if err != nil {
-		return service.TaskErrorWrapper(err, "handle_video_model_ratio_failed", http.StatusInternalServerError)
+	videoModelRatio, err := HandleVideoModelRatio(c, info)
+	if videoModelRatio != nil {
+		if err != nil {
+			return service.TaskErrorWrapper(err, "handle_video_model_ratio_failed", http.StatusInternalServerError)
+		}
+		ratio = videoModelRatio.PriceTotal
 	}
 	println(fmt.Sprintf("model: %s, model_price: %.4f, group: %s, group_ratio: %.4f, final_ratio: %.4f", modelName, modelPrice, info.UsingGroup, groupRatio, ratio))
 	userQuota, err := model.GetUserQuota(info.UserId, false)
@@ -185,6 +188,9 @@ func RelayTaskSubmit(c *gin.Context, info *relaycommon.RelayInfo) (taskErr *dto.
 				other["group_ratio"] = groupRatio
 				if hasUserGroupRatio {
 					other["user_group_ratio"] = userGroupRatio
+				}
+				if videoModelRatio != nil {
+					other["video_model_ratio_info"] = videoModelRatio
 				}
 				model.RecordConsumeLog(c, info.UserId, model.RecordConsumeLogParams{
 					ChannelId: info.ChannelId,
