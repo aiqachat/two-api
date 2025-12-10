@@ -150,6 +150,11 @@ func updateVideoSingleTask(ctx context.Context, adaptor channel.TaskAdaptor, cha
 				if modelName, ok := taskData["model"].(string); ok && modelName != "" {
 					// 获取模型价格和倍率
 					modelRatio, hasRatioSetting, _ := ratio_setting.GetModelRatio(modelName)
+					videoModelRatio, _ := model.WsVideoRatioGetByModeName(modelName)
+					// FIXME: 处理视频模型退费(当前模型添加了视频倍率配置后, 不进行退费)
+					if videoModelRatio != nil {
+						break
+ 					}
 					// 只有配置了倍率(非固定价格)时才按 token 重新计费
 					if hasRatioSetting && modelRatio > 0 {
 						// 获取用户和组的倍率信息
