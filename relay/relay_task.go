@@ -84,9 +84,6 @@ func RelayTaskSubmit(c *gin.Context, info *relaycommon.RelayInfo) (taskErr *dto.
 		}
 		ratio = videoModelRatio.PriceTotal
 	}
-	//if 2 > 1 {
-	//	return service.TaskErrorWrapperLocal(errors.New("测试"), "model_not_support", http.StatusBadRequest)
-	//}
 	println(fmt.Sprintf("model: %s, model_price: %.4f, group: %s, group_ratio: %.4f, final_ratio: %.4f",
 		modelName, modelPrice, info.UsingGroup, groupRatioResult.Result, ratio))
 	userQuota, err := model.GetUserQuota(info.UserId, false)

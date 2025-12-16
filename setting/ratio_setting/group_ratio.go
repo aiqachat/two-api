@@ -138,6 +138,21 @@ func GetGroupGroupRatio(userGroup, usingGroup string) (float64, bool) {
 	return ratio, true
 }
 
+func GetGroupModelRatio(userGroup, modelName string) (float64, bool) {
+	groupModelRatioMutex.RLock()
+	defer groupModelRatioMutex.RUnlock()
+
+	gm, ok := GroupModelRatio[userGroup]
+	if !ok {
+		return -1, false
+	}
+	ratio, ok := gm[modelName]
+	if !ok {
+		return -1, false
+	}
+	return ratio, true
+}
+
 type GroupRatioResult struct {
 	GroupRatio      float64 `json:"group_ratio"`
 	GroupGroupRatio *float64 `json:"group_group_ratio"`
@@ -164,6 +179,13 @@ func GetGroupRatioResult(userGroup, usingGroup string, modelName string) GroupRa
 		result.Result = userGroupRatio
 	}
 	// ============================== 获取用户分组特殊分组倍率
+	// ============================== 获取用户分组特殊模型倍率
+	groupModelRatio, hasGroupModelRatio := GetGroupModelRatio(userGroup, modelName)
+	if hasGroupModelRatio {
+		result.GroupModelRatio = &groupModelRatio
+		result.Result = groupModelRatio
+	}
+	// ============================== 获取用户分组特殊模型倍率
 	return result
 }
 
@@ -195,6 +217,14 @@ func UpdateGroupGroupRatioByJSONString(jsonStr string) error {
 
 	GroupGroupRatio = make(map[string]map[string]float64)
 	return json.Unmarshal([]byte(jsonStr), &GroupGroupRatio)
+}
+
+func UpdateGroupModelRatioByJSONString(jsonStr string) error {
+	groupModelRatioMutex.Lock()
+	defer groupModelRatioMutex.Unlock()
+
+	GroupModelRatio = make(map[string]map[string]float64)
+	return json.Unmarshal([]byte(jsonStr), &GroupModelRatio)
 }
 
 func CheckGroupRatio(jsonStr string) error {
