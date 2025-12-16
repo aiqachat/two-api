@@ -5,7 +5,6 @@ export const fixDescriptionsLogDetails = (info, source) => {
     return source;
   }
   const { price, user_group_ratio, duration, resolution } = details;
-  console.log(details);
   return `分组倍率 ${user_group_ratio}，视频每秒价格 $${price}，秒数 ${duration}，分辨率 ${resolution}`;
 };
 // 修复描述"计费过程"
