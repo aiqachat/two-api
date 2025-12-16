@@ -4,8 +4,8 @@ export const fixDescriptionsLogDetails = (info, source) => {
   if (!details) {
     return source;
   }
-  const { price, user_group_ratio, duration, resolution } = details;
-  return `分组倍率 ${user_group_ratio}，视频每秒价格 $${price}，秒数 ${duration}，分辨率 ${resolution}`;
+  const { price, group_ratio, duration, resolution } = details;
+  return `分组倍率 ${group_ratio}，视频每秒价格 $${price}，秒数 ${duration}，分辨率 ${resolution}`;
 };
 // 修复描述"计费过程"
 export const fixDescriptionsCalculateProcess = (info, source) => {
@@ -13,6 +13,6 @@ export const fixDescriptionsCalculateProcess = (info, source) => {
   if (!details) {
     return source;
   }
-  const { price, user_group_ratio, duration, resolution, price_total } = details;
-  return `分组倍率：${user_group_ratio} * 分辨率(${resolution})价格：$${price} * 视频秒数：${duration} = $${price_total}`;
+  const { price, group_ratio, duration, resolution, price_total } = details;
+  return `分组倍率：${group_ratio} * 分辨率(${resolution})价格：$${price} * 视频秒数：${duration} = $${price_total}`;
 };
