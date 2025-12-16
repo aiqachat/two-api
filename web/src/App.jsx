@@ -53,6 +53,7 @@ const Dashboard = lazy(() => import('./pages/Dashboard'));
 const About = lazy(() => import('./pages/About'));
 const UserAgreement = lazy(() => import('./pages/UserAgreement'));
 const PrivacyPolicy = lazy(() => import('./pages/PrivacyPolicy'));
+const DevPage = lazy(() => import('./pages/dev'));
 
 function App() {
   const location = useLocation();
@@ -346,6 +347,18 @@ function App() {
             </PrivateRoute>
           }
         />
+        {/*============================================开发专用页面*/}
+        <Route
+          path='/dev'
+          element={
+            <PrivateRoute>
+              <Suspense fallback={<Loading></Loading>} key={location.pathname}>
+                <DevPage />
+              </Suspense>
+            </PrivateRoute>
+          }
+        />
+        {/*============================================开发专用页面*/}
         <Route path='*' element={<NotFound />} />
       </Routes>
     </SetupCheck>
