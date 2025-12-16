@@ -31,15 +31,12 @@ func HandleGroupRatio(ctx *gin.Context, relayInfo *relaycommon.RelayInfo) types.
 	}
 
 	// check user group special ratio
-	userGroupRatio, ok := ratio_setting.GetGroupGroupRatio(relayInfo.UserGroup, relayInfo.UsingGroup)
-	if ok {
+	userRatioResult := ratio_setting.GetGroupRatioResult(relayInfo.UserGroup, relayInfo.UsingGroup, relayInfo.OriginModelName)
+	groupRatioInfo.GroupRatio = userRatioResult.Result
+	if userRatioResult.GroupGroupRatio != nil && userRatioResult.GroupModelRatio != nil {
 		// user group special ratio
-		groupRatioInfo.GroupSpecialRatio = userGroupRatio
-		groupRatioInfo.GroupRatio = userGroupRatio
+		groupRatioInfo.GroupSpecialRatio = userRatioResult.Result
 		groupRatioInfo.HasSpecialRatio = true
-	} else {
-		// normal group ratio
-		groupRatioInfo.GroupRatio = ratio_setting.GetGroupRatio(relayInfo.UsingGroup)
 	}
 
 	return groupRatioInfo
