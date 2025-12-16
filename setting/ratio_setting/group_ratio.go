@@ -138,6 +138,35 @@ func GetGroupGroupRatio(userGroup, usingGroup string) (float64, bool) {
 	return ratio, true
 }
 
+type GroupRatioResult struct {
+	GroupRatio      float64 `json:"group_ratio"`
+	GroupGroupRatio *float64 `json:"group_group_ratio"`
+	GroupModelRatio *float64 `json:"group_model_ratio"`
+	Result          float64 `json:"result"`
+}
+
+// 获取分组倍率统计
+func GetGroupRatioResult(userGroup, usingGroup string, modelName string) GroupRatioResult {
+	result := GroupRatioResult{
+		GroupRatio:      1,
+		GroupGroupRatio: nil,
+		GroupModelRatio: nil,
+		Result:          1,
+	}
+	// ============================== 获取分组倍率
+	result.GroupRatio = GetGroupRatio(userGroup)
+	result.Result = result.GroupRatio
+	// ============================== 获取分组倍率
+	// ============================== 获取用户分组特殊分组倍率
+	userGroupRatio, hasUserGroupRatio := GetGroupGroupRatio(userGroup, usingGroup)
+	if hasUserGroupRatio {
+		result.GroupGroupRatio = &userGroupRatio
+		result.Result = userGroupRatio
+	}
+	// ============================== 获取用户分组特殊分组倍率
+	return result
+}
+
 func GroupGroupRatio2JSONString() string {
 	groupGroupRatioMutex.RLock()
 	defer groupGroupRatioMutex.RUnlock()

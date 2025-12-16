@@ -64,14 +64,8 @@ func RelayTaskSubmit(c *gin.Context, info *relaycommon.RelayInfo) (taskErr *dto.
 	}
 
 	// 预扣
-	groupRatio := ratio_setting.GetGroupRatio(info.UsingGroup)
-	var ratio float64
-	userGroupRatio, hasUserGroupRatio := ratio_setting.GetGroupGroupRatio(info.UserGroup, info.UsingGroup)
-	if hasUserGroupRatio {
-		ratio = modelPrice * userGroupRatio
-	} else {
-		ratio = modelPrice * groupRatio
-	}
+	groupRatioResult := ratio_setting.GetGroupRatioResult(info.UserGroup, info.UsingGroup, modelName)
+	var ratio = modelPrice * groupRatioResult.Result
 	// FIXME: 临时修补，支持任务仅按次计费
 	if !common.StringsContains(constant.TaskPricePatches, modelName) {
 		if len(info.PriceData.OtherRatios) > 0 {
@@ -83,14 +77,18 @@ func RelayTaskSubmit(c *gin.Context, info *relaycommon.RelayInfo) (taskErr *dto.
 		}
 	}
 	// FIXME: 处理视频模型价格
-	videoModelRatio, err := HandleVideoModelRatio(c, info)
+	videoModelRatio, err := HandleVideoModelRatio(c, info, groupRatioResult.Result)
 	if videoModelRatio != nil {
 		if err != nil {
 			return service.TaskErrorWrapper(err, "handle_video_model_ratio_failed", http.StatusInternalServerError)
 		}
 		ratio = videoModelRatio.PriceTotal
 	}
-	println(fmt.Sprintf("model: %s, model_price: %.4f, group: %s, group_ratio: %.4f, final_ratio: %.4f", modelName, modelPrice, info.UsingGroup, groupRatio, ratio))
+	//if 2 > 1 {
+	//	return service.TaskErrorWrapperLocal(errors.New("测试"), "model_not_support", http.StatusBadRequest)
+	//}
+	println(fmt.Sprintf("model: %s, model_price: %.4f, group: %s, group_ratio: %.4f, final_ratio: %.4f",
+		modelName, modelPrice, info.UsingGroup, groupRatioResult.Result, ratio))
 	userQuota, err := model.GetUserQuota(info.UserId, false)
 	if err != nil {
 		taskErr = service.TaskErrorWrapper(err, "get_user_quota_failed", http.StatusInternalServerError)
@@ -185,9 +183,12 @@ func RelayTaskSubmit(c *gin.Context, info *relaycommon.RelayInfo) (taskErr *dto.
 					other["request_path"] = c.Request.URL.Path
 				}
 				other["model_price"] = modelPrice
-				other["group_ratio"] = groupRatio
-				if hasUserGroupRatio {
-					other["user_group_ratio"] = userGroupRatio
+				other["group_ratio"] = groupRatioResult.GroupRatio
+				if groupRatioResult.GroupGroupRatio != nil {
+					other["user_group_ratio"] = groupRatioResult.GroupGroupRatio
+				}
+				if groupRatioResult.GroupModelRatio != nil {
+					other["group_model_ratio"] = groupRatioResult.GroupModelRatio
 				}
 				if videoModelRatio != nil {
 					other["video_model_ratio_info"] = videoModelRatio

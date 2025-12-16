@@ -8,7 +8,6 @@ import (
 	"github.com/QuantumNous/new-api/common"
 	"github.com/QuantumNous/new-api/model"
 	relaycommon "github.com/QuantumNous/new-api/relay/common"
-	"github.com/QuantumNous/new-api/setting/ratio_setting"
 	"github.com/gin-gonic/gin"
 	"github.com/goccy/go-json"
 	"github.com/pkg/errors"
@@ -16,10 +15,10 @@ import (
 )
 
 type VideoModelRatioInfo struct {
-	ModelName      string  `json:"model_name"`
-	Resolution     string  `json:"resolution"`
-	Duration       int64   `json:"duration"`
-	UserGroupRatio float64 `json:"user_group_ratio"`
+	ModelName  string  `json:"model_name"`
+	Resolution string  `json:"resolution"`
+	Duration   int64   `json:"duration"`
+	GroupRatio float64 `json:"group_ratio"`
 	// 每秒单价
 	Price float64 `json:"price"`
 	// 总价
@@ -93,7 +92,8 @@ func loadVideoInfo(c *gin.Context, info *VideoModelRatioInfo) error {
 // HandleVideoModelRatio 处理视频模型价格比例
 func HandleVideoModelRatio(
 	c *gin.Context,
-	info *relaycommon.RelayInfo) (*VideoModelRatioInfo, error) {
+	info *relaycommon.RelayInfo,
+	groupRatio float64) (*VideoModelRatioInfo, error) {
 	// =========================================== 获取视频配置
 	modelName := info.OriginModelName
 	if modelName == "" {
@@ -108,6 +108,7 @@ func HandleVideoModelRatio(
 	// =========================================== 获取视频参数
 	videoInfo := &VideoModelRatioInfo{
 		ModelName: modelName,
+		GroupRatio: groupRatio,
 	}
 	err = loadVideoInfo(c, videoInfo)
 	if err != nil {
@@ -119,21 +120,14 @@ func HandleVideoModelRatio(
 	}
 	videoInfo.Price = price
 	// =========================================== 获取视频参数
-	// =========================================== 获取用户分组倍率
-	userGroupRatio, hasUserGroupRatio := ratio_setting.GetGroupGroupRatio(info.UserGroup, info.UsingGroup)
-	if !hasUserGroupRatio {
-		userGroupRatio = ratio_setting.GetGroupRatio(info.UsingGroup)
-	}
-	videoInfo.UserGroupRatio = userGroupRatio
-	// =========================================== 获取用户分组倍率
-	videoInfo.PriceTotal = videoInfo.Price * float64(videoInfo.Duration) * videoInfo.UserGroupRatio
-	res := decimal.NewFromFloat(videoInfo.UserGroupRatio)
+	videoInfo.PriceTotal = videoInfo.Price * float64(videoInfo.Duration) * videoInfo.GroupRatio
+	res := decimal.NewFromFloat(videoInfo.GroupRatio)
 	res = res.Mul(decimal.NewFromFloat(videoInfo.Price))
 	res = res.Mul(decimal.NewFromInt(videoInfo.Duration))
 	videoInfo.PriceTotal, _ = res.Float64()
 	println(fmt.Sprintf(
 		"视频分辨率: %s, 视频秒数: %d, 分辨率每秒价格: %.4f, 用户分组倍率: %.4f, 结果倍率: %.4f",
-		videoInfo.Resolution, videoInfo.Duration, videoInfo.Price, userGroupRatio, videoInfo.PriceTotal,
+		videoInfo.Resolution, videoInfo.Duration, videoInfo.Price, videoInfo.GroupRatio, videoInfo.PriceTotal,
 	))
 	return videoInfo, nil
 }
