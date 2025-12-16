@@ -17,6 +17,7 @@ export default function GroupRatioSettings(props) {
     GroupRatio: '',
     UserUsableGroups: '',
     GroupGroupRatio: '',
+    GroupModelRatio: '',
     'group_ratio_setting.group_special_usable_group': '',
     AutoGroups: '',
     DefaultUseAutoGroup: false,
@@ -163,6 +164,34 @@ export default function GroupRatioSettings(props) {
               ]}
               onChange={(value) =>
                 setInputs({ ...inputs, GroupGroupRatio: value })
+              }
+            />
+          </Col>
+        </Row>
+        <Row gutter={16}>
+          <Col xs={24} sm={16}>
+            <Form.TextArea
+              label='分组特殊模型倍率'
+              placeholder='为一个 JSON 文本'
+              extraText={
+                <>
+                  <div>键为分组名称，值为另一个 JSON 对象</div>
+                  <div>键为分组名称，值为该分组的模型的特殊分组倍率</div>
+                  <div>{`例如：{"vip": {"doubao-seedance-1-0-pro-fast-251015": 0.5}}，表示 vip 分组的用户在使用"doubao-seedance-1-0-pro-fast-251015"模型时倍率为0.5`}</div>
+                </>
+              }
+              field={'GroupModelRatio'}
+              autosize={{ minRows: 6, maxRows: 12 }}
+              trigger='blur'
+              stopValidateWithError
+              rules={[
+                {
+                  validator: (rule, value) => verifyJSON(value),
+                  message: '不是合法的 JSON 字符串',
+                },
+              ]}
+              onChange={(value) =>
+                setInputs({ ...inputs, GroupModelRatio: value })
               }
             />
           </Col>

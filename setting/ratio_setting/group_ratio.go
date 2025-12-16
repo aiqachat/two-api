@@ -10,13 +10,14 @@ import (
 	"github.com/QuantumNous/new-api/types"
 )
 
-var groupRatio = map[string]float64{
-	"default": 1,
-	"vip":     1,
-	"svip":    1,
-}
-
-var groupRatioMutex sync.RWMutex
+var (
+	groupRatio = map[string]float64{
+		"default": 1,
+		"vip":     1,
+		"svip":    1,
+	}
+	groupRatioMutex sync.RWMutex
+)
 
 var (
 	GroupGroupRatio = map[string]map[string]float64{
@@ -25,6 +26,15 @@ var (
 		},
 	}
 	groupGroupRatioMutex sync.RWMutex
+)
+
+var (
+	GroupModelRatio = map[string]map[string]float64{
+		"vip": {
+			"edit_this": 0.9,
+		},
+	}
+	groupModelRatioMutex sync.RWMutex
 )
 
 var defaultGroupSpecialUsableGroup = map[string]map[string]string{
@@ -135,6 +145,17 @@ func GroupGroupRatio2JSONString() string {
 	jsonBytes, err := json.Marshal(GroupGroupRatio)
 	if err != nil {
 		common.SysLog("error marshalling group-group ratio: " + err.Error())
+	}
+	return string(jsonBytes)
+}
+
+func GroupModelRatio2JSONString() string {
+	groupModelRatioMutex.RLock()
+	defer groupModelRatioMutex.RUnlock()
+
+	jsonBytes, err := json.Marshal(GroupModelRatio)
+	if err != nil {
+		common.SysLog("error marshalling group-model ratio: " + err.Error())
 	}
 	return string(jsonBytes)
 }
