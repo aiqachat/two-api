@@ -6,10 +6,8 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-	"strconv"
-	"strings"
+	"regexp"
 
-	"github.com/QuantumNous/new-api/common"
 	"github.com/QuantumNous/new-api/constant"
 	"github.com/QuantumNous/new-api/dto"
 	"github.com/QuantumNous/new-api/model"
@@ -190,9 +188,22 @@ func (a *TaskAdaptor) convertToRequestPayload(req *relaycommon.TaskSubmitReq) (*
 
 	// Add text prompt
 	if req.Prompt != "" {
+		if req.Resolution == "" {
+			return nil, errors.New("视频分辨率不能为空")
+		}
+		if req.Ratio == "" {
+			return nil, errors.New("视频比例不能为空")
+		}
+		if req.Duration == 0 {
+			return nil, errors.New("视频时长不能为空")
+		}
+		re := regexp.MustCompile(`\s+(--rs|--rt|--dur)\s+\S+`)
+		// 清理原始参数
+		prompt := re.ReplaceAllString(req.Prompt, "")
+		prompt = fmt.Sprintf("%s --rs %s --rt %s --dur %d", prompt, req.Resolution, req.Ratio, req.Duration)
 		r.Content = append(r.Content, ContentItem{
 			Type: "text",
-			Text: req.Prompt,
+			Text: prompt,
 		})
 	}
 
@@ -310,78 +321,25 @@ func (a *TaskAdaptor) ParseTaskResult(respBody []byte) (*relaycommon.TaskInfo, e
 	return &taskResult, nil
 }
 
-// ================================= 提取视频参数
-func getCurrentRequestBodyMap(c *gin.Context) (map[string]interface{}, error) {
-	body, err := common.GetRequestBody(c)
-	if err != nil {
-		return nil, err
-	}
-	if len(body) == 0 {
-		return nil, errors.New("未获取到body内容")
-	}
-	// 解析请求体为JSON
-	var requestData map[string]interface{}
-	if err := json.Unmarshal(body, &requestData); err != nil {
-		return nil, errors.New("body内容解析失败")
-	}
-	return requestData, nil
-}
-
-func parseVideoParamsSplit(paramStr string) map[string]string {
-	result := make(map[string]string)
-	// 按空格分割
-	parts := strings.Fields(paramStr)
-
-	for i := 0; i < len(parts)-1; i++ {
-		if strings.HasPrefix(parts[i], "--") && !strings.HasPrefix(parts[i+1], "--") {
-			key := strings.TrimPrefix(parts[i], "--")
-			value := parts[i+1]
-			result[key] = value
-			i++ // 跳过已处理的value
-		}
-	}
-	return result
-}
-
-func loadVideoInfo(c *gin.Context, info *relaycommon.VideoTaskInfo) error {
-	var result map[string]string
-	bodyMap, err := getCurrentRequestBodyMap(c)
-	if err != nil {
-		return err
-	}
-	str := bodyMap["prompt"]
-	if str == nil {
-		return errors.New("未获取到prompt内容")
-	}
-	result = parseVideoParamsSplit(str.(string))
-	if result["rs"] != "" {
-		result["resolution"] = result["rs"]
-	}
-	if result["dur"] != "" {
-		result["duration"] = result["dur"]
-	}
-	if _, ok := result["resolution"]; !ok {
-		return errors.New("视频分辨率不能为空")
-	}
-	if _, ok := result["duration"]; !ok {
-		return errors.New("视频时长(秒)不能为空")
-	}
-	duration, err := strconv.Atoi(result["duration"])
-	if err != nil {
-		return err
-	}
-	info.Resolution = result["resolution"]
-	info.Duration = duration
-	return nil
-}
-
 func (a *TaskAdaptor)GetVideoInfo(c *gin.Context) (*relaycommon.VideoTaskInfo, error){
-	videoInfo := &relaycommon.VideoTaskInfo{
+	//videoInfo := &relaycommon.VideoTaskInfo{
+	//}
+	//err := loadVideoInfo(c, videoInfo)
+	//if err != nil {
+	//	return videoInfo, err
+	//}
+	//return videoInfo, nil
+	v, exists := c.Get("task_request")
+	if !exists {
+		return nil, fmt.Errorf("request not found in context")
 	}
-	err := loadVideoInfo(c, videoInfo)
-	if err != nil {
-		return videoInfo, err
+	req, ok := v.(relaycommon.TaskSubmitReq)
+	if !ok {
+		return nil, fmt.Errorf("invalid request type in context")
 	}
-	return videoInfo, nil
+	result := &relaycommon.VideoTaskInfo{
+		Duration:   req.Duration,
+		Resolution: req.Resolution,
+	}
+	return result, nil
 }
-// ================================= 提取视频参数
