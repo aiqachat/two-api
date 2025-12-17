@@ -13,6 +13,7 @@ import (
 	"github.com/QuantumNous/new-api/common"
 	"github.com/QuantumNous/new-api/model"
 	"github.com/gin-gonic/gin"
+	"github.com/pkg/errors"
 
 	"github.com/QuantumNous/new-api/constant"
 	"github.com/QuantumNous/new-api/dto"
@@ -411,4 +412,8 @@ func extractProjectFromOperationName(name string) string {
 		return m[1]
 	}
 	return ""
+}
+
+func (a *TaskAdaptor)GetVideoInfo(c *gin.Context) (*relaycommon.VideoTaskInfo, error){
+	return nil, errors.New("视频参数处理未实现")
 }

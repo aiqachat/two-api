@@ -326,3 +326,7 @@ func extractModelFromOperationName(name string) string {
 	}
 	return ""
 }
+
+func (a *TaskAdaptor)GetVideoInfo(c *gin.Context) (*relaycommon.VideoTaskInfo, error){
+	return nil, errors.New("视频参数处理未实现")
+}

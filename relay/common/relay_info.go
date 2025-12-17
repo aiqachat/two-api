@@ -580,6 +580,12 @@ type TaskInfo struct {
 	TotalTokens      int    `json:"total_tokens,omitempty"`      // 用于按倍率计费
 }
 
+// 视频任务参数
+type VideoTaskInfo struct {
+	Resolution string  `json:"resolution"`
+	Duration   int64   `json:"duration"`
+}
+
 func FailTaskInfo(reason string) *TaskInfo {
 	return &TaskInfo{
 		Status: "FAILURE",

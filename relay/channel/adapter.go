@@ -50,6 +50,8 @@ type TaskAdaptor interface {
 	FetchTask(baseUrl, key string, body map[string]any, proxy string) (*http.Response, error)
 
 	ParseTaskResult(respBody []byte) (*relaycommon.TaskInfo, error)
+
+	GetVideoInfo(c *gin.Context) (*relaycommon.VideoTaskInfo, error)
 }
 
 type OpenAIVideoConverter interface {
