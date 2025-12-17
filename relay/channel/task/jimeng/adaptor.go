@@ -424,6 +424,14 @@ func hmacSHA256(key []byte, data []byte) []byte {
 }
 
 func (a *TaskAdaptor) convertToRequestPayload(req *relaycommon.TaskSubmitReq) (*requestPayload, error) {
+	resolution := "720p"
+	if strings.HasSuffix(req.Model, "_pro") || strings.HasSuffix(req.Model, "_1080p") {
+		resolution = "1080p"
+	}
+	if resolution != req.Resolution {
+		return nil, fmt.Errorf("当前模型权支持‘" + resolution + "’分辨率")
+	}
+
 	r := requestPayload{
 		ReqKey: req.Model,
 		Prompt: req.Prompt,
@@ -541,16 +549,9 @@ func (a *TaskAdaptor) GetVideoInfo(c *gin.Context) (*relaycommon.VideoTaskInfo, 
 	if !ok {
 		return nil, fmt.Errorf("invalid request type in context")
 	}
-	resolution := "720p"
-	if strings.HasSuffix(req.Model, "_pro") || strings.HasSuffix(req.Model, "_1080p") {
-		resolution = "1080p"
-	}
 	result := &relaycommon.VideoTaskInfo{
 		Duration:   req.Duration,
-		Resolution: resolution,
-	}
-	if result.Resolution != req.Resolution {
-		return nil, fmt.Errorf("当前模型权支持‘" + result.Resolution + "’分辨率")
+		Resolution: req.Resolution,
 	}
 	return result, nil
 }
