@@ -88,6 +88,8 @@ func validateMultipartTaskRequest(c *gin.Context, info *RelayInfo, action string
 	req = TaskSubmitReq{
 		Prompt:   formData.Get("prompt"),
 		Model:    formData.Get("model"),
+		Resolution:    formData.Get("resolution"),
+		Ratio:    formData.Get("ratio"),
 		Mode:     formData.Get("mode"),
 		Image:    formData.Get("image"),
 		Size:     formData.Get("size"),
