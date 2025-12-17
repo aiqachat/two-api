@@ -38,7 +38,7 @@ type requestPayload struct {
 	ImageUrls        []string `json:"image_urls,omitempty"`
 	Prompt           string   `json:"prompt,omitempty"`
 	Seed             int64    `json:"seed"`
-	//AspectRatio      string   `json:"aspect_ratio"`
+	AspectRatio      string   `json:"aspect_ratio"`
 	Frames           int      `json:"frames,omitempty"`
 }
 
