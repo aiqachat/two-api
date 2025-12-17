@@ -371,7 +371,7 @@ func loadVideoInfo(c *gin.Context, info *relaycommon.VideoTaskInfo) error {
 		return err
 	}
 	info.Resolution = result["resolution"]
-	info.Duration = int64(duration)
+	info.Duration = duration
 	return nil
 }
 

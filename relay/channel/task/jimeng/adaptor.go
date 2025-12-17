@@ -436,6 +436,8 @@ func (a *TaskAdaptor) convertToRequestPayload(req *relaycommon.TaskSubmitReq) (*
 		r.Frames = 121 // 24*5+1 = 121
 	}
 
+	r.AspectRatio = req.Ratio
+
 	// Handle one-of image_urls or binary_data_base64
 	if req.HasImage() {
 		if strings.HasPrefix(req.Images[0], "http") {
@@ -530,6 +532,25 @@ func isNewAPIRelay(apiKey string) bool {
 	return strings.HasPrefix(apiKey, "sk-")
 }
 
-func (a *TaskAdaptor)GetVideoInfo(c *gin.Context) (*relaycommon.VideoTaskInfo, error){
-	return nil, errors.New("视频参数处理未实现")
+func (a *TaskAdaptor) GetVideoInfo(c *gin.Context) (*relaycommon.VideoTaskInfo, error) {
+	v, exists := c.Get("task_request")
+	if !exists {
+		return nil, fmt.Errorf("request not found in context")
+	}
+	req, ok := v.(relaycommon.TaskSubmitReq)
+	if !ok {
+		return nil, fmt.Errorf("invalid request type in context")
+	}
+	resolution := "720p"
+	if strings.HasSuffix(req.Model, "_pro") || strings.HasSuffix(req.Model, "_1080p") {
+		resolution = "1080p"
+	}
+	result := &relaycommon.VideoTaskInfo{
+		Duration:   req.Duration,
+		Resolution: resolution,
+	}
+	if result.Resolution != req.Resolution {
+		return nil, fmt.Errorf("当前模型权支持‘" + result.Resolution + "’分辨率")
+	}
+	return result, nil
 }

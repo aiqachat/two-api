@@ -48,7 +48,7 @@ func HandleVideoModelRatio(
 	if err != nil {
 		return videoInfo, err
 	}
-	videoInfo.Duration = videoTaskInfo.Duration
+	videoInfo.Duration = int64(videoTaskInfo.Duration)
 	videoInfo.Resolution = videoTaskInfo.Resolution
 	price, ok := config[videoInfo.Resolution]
 	if !ok {

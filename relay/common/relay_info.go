@@ -588,7 +588,7 @@ type TaskInfo struct {
 // 视频任务参数
 type VideoTaskInfo struct {
 	Resolution string `json:"resolution"`
-	Duration   int64  `json:"duration"`
+	Duration   int  `json:"duration"`
 }
 
 func FailTaskInfo(reason string) *TaskInfo {
