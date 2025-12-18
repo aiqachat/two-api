@@ -38,7 +38,7 @@ type requestPayload struct {
 	ImageUrls        []string `json:"image_urls,omitempty"`
 	Prompt           string   `json:"prompt,omitempty"`
 	Seed             int64    `json:"seed"`
-	//AspectRatio      string   `json:"aspect_ratio"`
+	AspectRatio      string   `json:"aspect_ratio"`
 	Frames           int      `json:"frames,omitempty"`
 }
 
@@ -424,6 +424,14 @@ func hmacSHA256(key []byte, data []byte) []byte {
 }
 
 func (a *TaskAdaptor) convertToRequestPayload(req *relaycommon.TaskSubmitReq) (*requestPayload, error) {
+	resolution := "720p"
+	if strings.HasSuffix(req.Model, "_pro") || strings.HasSuffix(req.Model, "_1080p") {
+		resolution = "1080p"
+	}
+	if resolution != req.Resolution {
+		return nil, fmt.Errorf("当前模型权支持‘" + resolution + "’分辨率")
+	}
+
 	r := requestPayload{
 		ReqKey: req.Model,
 		Prompt: req.Prompt,
@@ -435,6 +443,8 @@ func (a *TaskAdaptor) convertToRequestPayload(req *relaycommon.TaskSubmitReq) (*
 	default:
 		r.Frames = 121 // 24*5+1 = 121
 	}
+
+	r.AspectRatio = req.Ratio
 
 	// Handle one-of image_urls or binary_data_base64
 	if req.HasImage() {
@@ -528,4 +538,20 @@ func (a *TaskAdaptor) ConvertToOpenAIVideo(originTask *model.Task) ([]byte, erro
 
 func isNewAPIRelay(apiKey string) bool {
 	return strings.HasPrefix(apiKey, "sk-")
+}
+
+func (a *TaskAdaptor) GetVideoInfo(c *gin.Context) (*relaycommon.VideoTaskInfo, error) {
+	v, exists := c.Get("task_request")
+	if !exists {
+		return nil, fmt.Errorf("request not found in context")
+	}
+	req, ok := v.(relaycommon.TaskSubmitReq)
+	if !ok {
+		return nil, fmt.Errorf("invalid request type in context")
+	}
+	result := &relaycommon.VideoTaskInfo{
+		Duration:   req.Duration,
+		Resolution: req.Resolution,
+	}
+	return result, nil
 }

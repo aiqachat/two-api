@@ -2,14 +2,11 @@ package relay
 
 import (
 	"fmt"
-	"strconv"
-	"strings"
 
-	"github.com/QuantumNous/new-api/common"
 	"github.com/QuantumNous/new-api/model"
+	"github.com/QuantumNous/new-api/relay/channel"
 	relaycommon "github.com/QuantumNous/new-api/relay/common"
 	"github.com/gin-gonic/gin"
-	"github.com/goccy/go-json"
 	"github.com/pkg/errors"
 	"github.com/shopspring/decimal"
 )
@@ -25,73 +22,10 @@ type VideoModelRatioInfo struct {
 	PriceTotal float64 `json:"price_total"`
 }
 
-func GetCurrentRequestBodyMap(c *gin.Context) (map[string]interface{}, error) {
-	body, err := common.GetRequestBody(c)
-	if err != nil {
-		return nil, err
-	}
-	if len(body) == 0 {
-		return nil, errors.New("未获取到body内容")
-	}
-	// 解析请求体为JSON
-	var requestData map[string]interface{}
-	if err := json.Unmarshal(body, &requestData); err != nil {
-		return nil, errors.New("body内容解析失败")
-	}
-	return requestData, nil
-}
-
-func parseVideoParamsSplit(paramStr string) map[string]string {
-	result := make(map[string]string)
-	// 按空格分割
-	parts := strings.Fields(paramStr)
-
-	for i := 0; i < len(parts)-1; i++ {
-		if strings.HasPrefix(parts[i], "--") && !strings.HasPrefix(parts[i+1], "--") {
-			key := strings.TrimPrefix(parts[i], "--")
-			value := parts[i+1]
-			result[key] = value
-			i++ // 跳过已处理的value
-		}
-	}
-	return result
-}
-
-func loadVideoInfo(c *gin.Context, info *VideoModelRatioInfo) error {
-	var result map[string]string
-	bodyMap, err := GetCurrentRequestBodyMap(c)
-	if err != nil {
-		return err
-	}
-	str := bodyMap["prompt"]
-	if str == nil {
-		return errors.New("未获取到prompt内容")
-	}
-	result = parseVideoParamsSplit(str.(string))
-	if result["rs"] != "" {
-		result["resolution"] = result["rs"]
-	}
-	if result["dur"] != "" {
-		result["duration"] = result["dur"]
-	}
-	if _, ok := result["resolution"]; !ok {
-		return errors.New("视频分辨率不能为空")
-	}
-	if _, ok := result["duration"]; !ok {
-		return errors.New("视频时长(秒)不能为空")
-	}
-	duration, err := strconv.Atoi(result["duration"])
-	if err != nil {
-		return err
-	}
-	info.Resolution = result["resolution"]
-	info.Duration = int64(duration)
-	return nil
-}
-
 // HandleVideoModelRatio 处理视频模型价格比例
 func HandleVideoModelRatio(
 	c *gin.Context,
+	adaptor channel.TaskAdaptor,
 	info *relaycommon.RelayInfo,
 	groupRatio float64) (*VideoModelRatioInfo, error) {
 	// =========================================== 获取视频配置
@@ -110,10 +44,12 @@ func HandleVideoModelRatio(
 		ModelName: modelName,
 		GroupRatio: groupRatio,
 	}
-	err = loadVideoInfo(c, videoInfo)
+	videoTaskInfo, err := adaptor.GetVideoInfo(c)
 	if err != nil {
 		return videoInfo, err
 	}
+	videoInfo.Duration = int64(videoTaskInfo.Duration)
+	videoInfo.Resolution = videoTaskInfo.Resolution
 	price, ok := config[videoInfo.Resolution]
 	if !ok {
 		return videoInfo, errors.New(fmt.Sprintf("不支持的视频分辨率：%s", videoInfo.Resolution))

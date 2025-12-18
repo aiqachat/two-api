@@ -504,11 +504,16 @@ type TaskRelayInfo struct {
 type TaskSubmitReq struct {
 	Prompt         string                 `json:"prompt"`
 	Model          string                 `json:"model,omitempty"`
+	// 分辨率
+	Resolution     string                 `json:"resolution,omitempty"`
+	// 宽高比
+	Ratio          string                 `json:"ratio,omitempty"`
+	// 生成视频时长(秒)
+	Duration       int                    `json:"duration,omitempty"`
 	Mode           string                 `json:"mode,omitempty"`
 	Image          string                 `json:"image,omitempty"`
 	Images         []string               `json:"images,omitempty"`
 	Size           string                 `json:"size,omitempty"`
-	Duration       int                    `json:"duration,omitempty"`
 	Seconds        string                 `json:"seconds,omitempty"`
 	InputReference string                 `json:"input_reference,omitempty"`
 	Metadata       map[string]interface{} `json:"metadata,omitempty"`
@@ -578,6 +583,12 @@ type TaskInfo struct {
 	Progress         string `json:"progress,omitempty"`
 	CompletionTokens int    `json:"completion_tokens,omitempty"` // 用于按倍率计费
 	TotalTokens      int    `json:"total_tokens,omitempty"`      // 用于按倍率计费
+}
+
+// 视频任务参数
+type VideoTaskInfo struct {
+	Resolution string `json:"resolution"`
+	Duration   int  `json:"duration"`
 }
 
 func FailTaskInfo(reason string) *TaskInfo {

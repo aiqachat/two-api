@@ -16,6 +16,7 @@ import (
 	"github.com/QuantumNous/new-api/relay/channel"
 	relaycommon "github.com/QuantumNous/new-api/relay/common"
 	"github.com/QuantumNous/new-api/service"
+	"github.com/pkg/errors"
 
 	"github.com/gin-gonic/gin"
 )
@@ -175,4 +176,8 @@ func actionValidate(c *gin.Context, sunoRequest *dto.SunoSubmitReq, action strin
 		err = fmt.Errorf("invalid_action")
 	}
 	return
+}
+
+func (a *TaskAdaptor)GetVideoInfo(c *gin.Context) (*relaycommon.VideoTaskInfo, error){
+	return nil, errors.New("视频参数处理未实现")
 }

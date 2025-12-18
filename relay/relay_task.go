@@ -77,7 +77,7 @@ func RelayTaskSubmit(c *gin.Context, info *relaycommon.RelayInfo) (taskErr *dto.
 		}
 	}
 	// FIXME: 处理视频模型价格
-	videoModelRatio, err := HandleVideoModelRatio(c, info, groupRatioResult.Result)
+	videoModelRatio, err := HandleVideoModelRatio(c, adaptor, info, groupRatioResult.Result)
 	if videoModelRatio != nil {
 		if err != nil {
 			return service.TaskErrorWrapper(err, "handle_video_model_ratio_failed", http.StatusInternalServerError)

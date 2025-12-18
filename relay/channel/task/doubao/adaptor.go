@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"regexp"
 
 	"github.com/QuantumNous/new-api/constant"
 	"github.com/QuantumNous/new-api/dto"
@@ -187,9 +188,22 @@ func (a *TaskAdaptor) convertToRequestPayload(req *relaycommon.TaskSubmitReq) (*
 
 	// Add text prompt
 	if req.Prompt != "" {
+		if req.Resolution == "" {
+			return nil, errors.New("视频分辨率不能为空")
+		}
+		if req.Ratio == "" {
+			return nil, errors.New("视频比例不能为空")
+		}
+		if req.Duration == 0 {
+			return nil, errors.New("视频时长不能为空")
+		}
+		re := regexp.MustCompile(`\s+(--rs|--rt|--dur)\s+\S+`)
+		// 清理原始参数
+		prompt := re.ReplaceAllString(req.Prompt, "")
+		prompt = fmt.Sprintf("%s --rs %s --rt %s --dur %d", prompt, req.Resolution, req.Ratio, req.Duration)
 		r.Content = append(r.Content, ContentItem{
 			Type: "text",
-			Text: req.Prompt,
+			Text: prompt,
 		})
 	}
 
@@ -305,4 +319,27 @@ func (a *TaskAdaptor) ParseTaskResult(respBody []byte) (*relaycommon.TaskInfo, e
 	}
 
 	return &taskResult, nil
+}
+
+func (a *TaskAdaptor)GetVideoInfo(c *gin.Context) (*relaycommon.VideoTaskInfo, error){
+	//videoInfo := &relaycommon.VideoTaskInfo{
+	//}
+	//err := loadVideoInfo(c, videoInfo)
+	//if err != nil {
+	//	return videoInfo, err
+	//}
+	//return videoInfo, nil
+	v, exists := c.Get("task_request")
+	if !exists {
+		return nil, fmt.Errorf("request not found in context")
+	}
+	req, ok := v.(relaycommon.TaskSubmitReq)
+	if !ok {
+		return nil, fmt.Errorf("invalid request type in context")
+	}
+	result := &relaycommon.VideoTaskInfo{
+		Duration:   req.Duration,
+		Resolution: req.Resolution,
+	}
+	return result, nil
 }
