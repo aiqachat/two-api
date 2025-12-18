@@ -448,6 +448,7 @@ export const useLogsData = () => {
           content = renderModelPrice(
             logs[i].prompt_tokens,
             logs[i].completion_tokens,
+            other?.quota_per_unit || 500 * 1000,
             other?.model_ratio,
             other?.model_price,
             other?.completion_ratio,
