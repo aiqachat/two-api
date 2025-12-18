@@ -52,7 +52,7 @@ func HandleVideoModelRatio(
 	videoInfo.Resolution = videoTaskInfo.Resolution
 	price, ok := config[videoInfo.Resolution]
 	if !ok {
-		return videoInfo, errors.New(fmt.Sprintf("不支持的视频分辨率：%s", videoInfo.Resolution))
+		return videoInfo, errors.New(fmt.Sprintf("视频计费不支持视频分辨率：%s", videoInfo.Resolution))
 	}
 	videoInfo.Price = price
 	// =========================================== 获取视频参数
