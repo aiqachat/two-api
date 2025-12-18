@@ -46,6 +46,7 @@ jobs:
             type=raw,value=release-{{date 'YYYYMMDD'}}-{{sha}}
 
       - name: Build and push Docker image
+        id: docker_build
         uses: docker/build-push-action@v5
         with:
           context: .
@@ -55,3 +56,29 @@ jobs:
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
+
+      - name: Send success notification to WeChat Work
+        if: success()
+        run: |
+          VERSION="release-$(date +'%Y%m%d')-$(git rev-parse --short HEAD)"
+          curl -X POST "${{ secrets.WECHAT_WEBHOOK_URL }}" \
+            -H 'Content-Type: application/json' \
+            -d '{
+              "msgtype": "markdown",
+              "markdown": {
+                "content": "## ✅ Docker 镜像构建成功 (Release)\n>**分支:** release\n>**版本:** '"$VERSION"'\n>**提交:** ${{ github.event.head_commit.message }}\n>**提交者:** ${{ github.actor }}\n>**镜像标签:**\n>- ghcr.io/${{ github.repository }}:latest\n>- ghcr.io/${{ github.repository }}:'"$VERSION"'\n>**构建时间:** '"$(date +'%Y-%m-%d %H:%M:%S')"'\n>**查看详情:** [GitHub Actions](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})"
+              }
+            }'
+
+      - name: Send failure notification to WeChat Work
+        if: failure()
+        run: |
+          VERSION="release-$(date +'%Y%m%d')-$(git rev-parse --short HEAD)"
+          curl -X POST "${{ secrets.WECHAT_WEBHOOK_URL }}" \
+            -H 'Content-Type: application/json' \
+            -d '{
+              "msgtype": "markdown",
+              "markdown": {
+                "content": "## ❌ Docker 镜像构建失败 (Release)\n>**分支:** release\n>**版本:** '"$VERSION"'\n>**提交:** ${{ github.event.head_commit.message }}\n>**提交者:** ${{ github.actor }}\n>**失败时间:** '"$(date +'%Y-%m-%d %H:%M:%S')"'\n>**查看详情:** [GitHub Actions](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})"
+              }
+            }'
