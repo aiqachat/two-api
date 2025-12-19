@@ -181,6 +181,16 @@ func (a *TaskAdaptor) GetChannelName() string {
 }
 
 func (a *TaskAdaptor) convertToRequestPayload(req *relaycommon.TaskSubmitReq) (*requestPayload, error) {
+	if req.Resolution == "" {
+		return nil, errors.New("视频分辨率不能为空")
+	}
+	if req.Ratio == "" {
+		return nil, errors.New("视频比例不能为空")
+	}
+	if req.Duration == 0 {
+		return nil, errors.New("视频时长不能为空")
+	}
+
 	r := requestPayload{
 		Model:   req.Model,
 		Content: []ContentItem{},
@@ -188,15 +198,6 @@ func (a *TaskAdaptor) convertToRequestPayload(req *relaycommon.TaskSubmitReq) (*
 
 	// Add text prompt
 	if req.Prompt != "" {
-		if req.Resolution == "" {
-			return nil, errors.New("视频分辨率不能为空")
-		}
-		if req.Ratio == "" {
-			return nil, errors.New("视频比例不能为空")
-		}
-		if req.Duration == 0 {
-			return nil, errors.New("视频时长不能为空")
-		}
 		re := regexp.MustCompile(`\s+(--rs|--rt|--dur)\s+\S+`)
 		// 清理原始参数
 		prompt := re.ReplaceAllString(req.Prompt, "")

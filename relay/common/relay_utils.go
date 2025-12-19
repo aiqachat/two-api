@@ -225,6 +225,8 @@ func ValidateBasicTaskRequest(c *gin.Context, info *RelayInfo, action string) *d
 		req.Images = []string{req.Image}
 	}
 
+	req.Resolution = strings.ToLower(req.Resolution)
+
 	storeTaskRequest(c, info, action, req)
 	return nil
 }

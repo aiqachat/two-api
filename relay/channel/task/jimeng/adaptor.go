@@ -424,17 +424,40 @@ func hmacSHA256(key []byte, data []byte) []byte {
 }
 
 func (a *TaskAdaptor) convertToRequestPayload(req *relaycommon.TaskSubmitReq) (*requestPayload, error) {
-	resolution := "720p"
-	if strings.HasSuffix(req.Model, "_pro") || strings.HasSuffix(req.Model, "_1080p") {
-		resolution = "1080p"
-	}
-	if resolution != req.Resolution {
-		return nil, fmt.Errorf("当前模型权支持‘" + resolution + "’分辨率")
-	}
-
 	r := requestPayload{
 		ReqKey: req.Model,
 		Prompt: req.Prompt,
+	}
+
+	if req.Resolution == "" {
+		return nil, errors.New("视频分辨率不能为空")
+	}
+	if req.Duration == 0 {
+		return nil, errors.New("视频时长不能为空")
+	}
+
+	if req.Model == "jimeng_v30" {
+		if req.Resolution != "1080p" && req.Resolution != "720p" {
+			return nil, fmt.Errorf("当前模型仅支持720p、1080p分辨率")
+		}
+		if req.Resolution == "1080p" {
+			r.ReqKey = "jimeng_v30_1080p"
+		}
+		r.AspectRatio = "16:9"
+	}
+
+	if req.Model == "jimeng_v30_pro" {
+		if req.Ratio == "" {
+			return nil, errors.New("视频比例不能为空")
+		}
+		if req.Resolution != "1080p" {
+			return nil, fmt.Errorf("当前模型仅支持1080p分辨率")
+		}
+		r.AspectRatio = req.Ratio
+	}
+
+	if req.Duration != 5 && req.Duration != 10 {
+		return nil, fmt.Errorf("当前模型时长仅支持5秒、10秒")
 	}
 
 	switch req.Duration {
@@ -443,8 +466,6 @@ func (a *TaskAdaptor) convertToRequestPayload(req *relaycommon.TaskSubmitReq) (*
 	default:
 		r.Frames = 121 // 24*5+1 = 121
 	}
-
-	r.AspectRatio = req.Ratio
 
 	// Handle one-of image_urls or binary_data_base64
 	if req.HasImage() {
