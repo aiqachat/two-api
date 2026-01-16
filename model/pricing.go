@@ -27,6 +27,7 @@ type Pricing struct {
 	CompletionRatio        float64                 `json:"completion_ratio"`
 	EnableGroup            []string                `json:"enable_groups"`
 	SupportedEndpointTypes []constant.EndpointType `json:"supported_endpoint_types"`
+	VideoRatioConfig       map[string]float64		`json:"video_ratio_config"`
 }
 
 type PricingVendor struct {
@@ -290,6 +291,10 @@ func updatePricing() {
 			pricing.ModelRatio = modelRatio
 			pricing.CompletionRatio = ratio_setting.GetCompletionRatio(model)
 			pricing.QuotaType = 0
+		}
+		item, _ := WsVideoRatioGetByModeName(model)
+		if item != nil {
+			pricing.VideoRatioConfig = item.Config
 		}
 		pricingMap = append(pricingMap, pricing)
 	}
