@@ -25,6 +25,7 @@ import {
   stringToColor,
   calculateModelPrice,
   getLobeHubIcon,
+  getCurrencyConfig,
 } from '../../../../../helpers';
 import {
   renderLimitedItems,
@@ -231,6 +232,22 @@ export const getPricingTableColumns = ({
     ...(isMobile ? {} : { fixed: 'right' }),
     render: (text, record, index) => {
       const priceData = getPriceData(record);
+      if(record.video_ratio_config) {
+        const {symbol} = getCurrencyConfig()
+        return (
+          <div className='space-y-1'>
+            {
+              Object.entries(record.video_ratio_config).map(([key, value]) => {
+                return (
+                  <div className='text-gray-700' key={key}>
+                    分辨率({key})：{symbol}{value} / 秒
+                  </div>
+                )
+              })
+            }
+          </div>
+        )
+      }
 
       if (priceData.isPerToken) {
         return (

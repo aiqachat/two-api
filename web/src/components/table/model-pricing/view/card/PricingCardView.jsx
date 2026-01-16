@@ -39,6 +39,7 @@ import {
   calculateModelPrice,
   formatPriceInfo,
   getLobeHubIcon,
+  getCurrencyConfig,
 } from '../../../../../helpers';
 import PricingCardSkeleton from './PricingCardSkeleton';
 import { useMinimumLoadingTime } from '../../../../../hooks/common/useMinimumLoadingTime';
@@ -247,6 +248,7 @@ const PricingCardView = ({
             displayPrice,
             currency,
           });
+          const { symbol } = getCurrencyConfig();
 
           return (
             <Card
@@ -265,7 +267,21 @@ const PricingCardView = ({
                         {model.model_name}
                       </h3>
                       <div className='flex items-center gap-3 text-xs mt-1'>
-                        {formatPriceInfo(priceData, t)}
+                        {model.video_ratio_config
+                          ? Object.entries(model.video_ratio_config).map(
+                              ([key, value]) => {
+                                return (
+                                  <span
+                                    style={{
+                                      color: 'var(--semi-color-text-1)',
+                                    }}
+                                  >
+                                    {`${key}: ${symbol}${value} / 秒`}
+                                  </span>
+                                );
+                              },
+                            )
+                          : formatPriceInfo(priceData, t)}
                       </div>
                     </div>
                   </div>
