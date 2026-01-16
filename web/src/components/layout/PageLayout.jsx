@@ -113,6 +113,8 @@ const PageLayout = () => {
         linkElement.href = logo;
       }
     }
+    // 设置标题
+    document.title = getSystemName();
     const savedLang = localStorage.getItem('i18nextLng');
     if (savedLang) {
       i18n.changeLanguage(savedLang);
