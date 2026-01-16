@@ -74,9 +74,18 @@ func updateVideoSingleTask(ctx context.Context, adaptor channel.TaskAdaptor, cha
 		logger.LogError(ctx, fmt.Sprintf("Task %s not found in taskM", taskId))
 		return fmt.Errorf("task %s not found", taskId)
 	}
+
+	// 读取ReqKey
+	reqKey, err := model.GetTaskDataValue(task, "req_key")
+	if err != nil {
+		logger.LogError(ctx, fmt.Sprintf("读取'req_key'失败, %s", err))
+		return fmt.Errorf("读取'req_key'失败")
+	}
+
 	resp, err := adaptor.FetchTask(baseURL, channel.Key, map[string]any{
 		"task_id": taskId,
 		"action":  task.Action,
+		"req_key": reqKey,
 	}, proxy)
 	if err != nil {
 		return fmt.Errorf("fetchTask failed for task %s: %w", taskId, err)
@@ -108,6 +117,13 @@ func updateVideoSingleTask(ctx context.Context, adaptor channel.TaskAdaptor, cha
 		return fmt.Errorf("parseTaskResult failed for task %s: %w", taskId, err)
 	} else {
 		task.Data = redactVideoResponseBody(responseBody)
+	}
+
+	// 保存 req_key
+	err = model.SetTaskDataValue(task, "req_key", reqKey)
+	if err != nil {
+		logger.LogError(ctx, fmt.Sprintf("设置'req_key'失败, %s", err))
+		return fmt.Errorf("设置'req_key'失败")
 	}
 
 	logger.LogDebug(ctx, fmt.Sprintf("UpdateVideoSingleTask taskResult: %+v", taskResult))

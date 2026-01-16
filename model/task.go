@@ -3,6 +3,7 @@ package model
 import (
 	"database/sql/driver"
 	"encoding/json"
+	"fmt"
 	"time"
 
 	"github.com/QuantumNous/new-api/constant"
@@ -439,4 +440,44 @@ func (t *Task) ToOpenAIVideo() *dto.OpenAIVideo {
 	openAIVideo.CompletedAt = t.UpdatedAt
 	openAIVideo.SetMetadata("url", t.FailReason)
 	return openAIVideo
+}
+
+func GetTaskDataValue(task *Task, key string) (string, error) {
+	// 使用map解析Data字段
+	var taskData map[string]interface{}
+	err := task.GetData(&taskData)
+	if err != nil {
+		// 处理错误
+		return "", err
+	}
+
+	// 读取数据
+	str, ok := taskData[key].(string)
+	if !ok {
+		// 处理不存在的情况
+		str = ""
+	}
+	return str, nil
+}
+
+func SetTaskDataValue(task *Task, key string, value string) error {
+	// 将现有的Data字段反序列化为map
+	var dataMap map[string]interface{}
+	if err := json.Unmarshal(task.Data, &dataMap); err != nil {
+		return fmt.Errorf("failed to unmarshal task data: %w", err)
+	}
+	
+	// 设置键值对
+	dataMap[key] = value
+	
+	// 将修改后的map重新序列化为json.RawMessage
+	newData, err := json.Marshal(dataMap)
+	if err != nil {
+		return fmt.Errorf("failed to marshal updated task data: %w", err)
+	}
+	
+	// 更新task.Data
+	task.Data = newData
+	
+	return nil
 }
