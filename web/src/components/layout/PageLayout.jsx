@@ -34,6 +34,7 @@ import {
   showError,
   setStatusData,
   getSystemTitle,
+  getSystemDescription,
 } from '../../helpers';
 import { UserContext } from '../../context/User';
 import { StatusContext } from '../../context/Status';
@@ -116,6 +117,12 @@ const PageLayout = () => {
     }
     // 设置标题
     document.title = getSystemTitle();
+    // ========================= 设置mate description
+    const metaDescriptionEle = document.querySelector("meta[name='description']");
+    if(metaDescriptionEle) {
+      metaDescriptionEle.setAttribute('content', getSystemDescription());
+    }
+    // ========================= 设置mate description
     const savedLang = localStorage.getItem('i18nextLng');
     if (savedLang) {
       i18n.changeLanguage(savedLang);

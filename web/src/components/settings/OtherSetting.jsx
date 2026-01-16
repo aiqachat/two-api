@@ -28,7 +28,7 @@ import {
   Space,
   Card,
 } from '@douyinfe/semi-ui';
-import { API, showError, showSuccess, timestamp2string } from '../../helpers';
+import { API, getSystemDescription, showError, showSuccess, timestamp2string } from '../../helpers';
 import { marked } from 'marked';
 import { useTranslation } from 'react-i18next';
 import { StatusContext } from '../../context/Status';
@@ -172,6 +172,7 @@ const OtherSetting = () => {
       }));
     }
   };
+
   //  个性化设置 - SystemTitle
   const submitSystemTitle = async () => {
     try {
@@ -188,6 +189,26 @@ const OtherSetting = () => {
       setLoadingInput((loadingInput) => ({
         ...loadingInput,
         SystemTitle: false,
+      }));
+    }
+  };
+
+  //  个性化设置 - SystemDescription
+  const submitSystemDescription = async () => {
+    try {
+      setLoadingInput((loadingInput) => ({
+        ...loadingInput,
+        SystemDescription: true,
+      }));
+      await updateOption('SystemDescription', inputs.SystemDescription);
+      showSuccess('站点描述已更新');
+    } catch (error) {
+      console.error('站点描述更新失败', error);
+      showError('站点描述更新失败');
+    } finally {
+      setLoadingInput((loadingInput) => ({
+        ...loadingInput,
+        SystemDescription: false,
       }));
     }
   };
@@ -465,6 +486,18 @@ const OtherSetting = () => {
                 loading={loadingInput['SystemTitle']}
               >
                 <>设置系统标题</>
+              </Button>
+              <Form.Input
+                label="站点描述"
+                placeholder="在此输入站点描述"
+                field="SystemDescription"
+                onChange={handleInputChange}
+              />
+              <Button
+                onClick={submitSystemDescription}
+                loading={loadingInput['SystemDescription']}
+              >
+                <>设置站点描述</>
               </Button>
               <Form.Input
                 label={t('Logo 图片地址')}

@@ -20,7 +20,8 @@ For commercial licensing, please contact support@quantumnous.com
 export function setStatusData(data) {
   localStorage.setItem('status', JSON.stringify(data));
   localStorage.setItem('system_name', data.system_name);
-  localStorage.setItem('system_title', data.system_title || '');
+  localStorage.setItem('system_title', data.system_title);
+  localStorage.setItem('system_description', data.system_description);
   localStorage.setItem('logo', data.logo);
   localStorage.setItem('footer_html', data.footer_html);
   localStorage.setItem('quota_per_unit', data.quota_per_unit);

@@ -373,6 +373,8 @@ func updateOptionMap(key string, value string) (err error) {
 		common.SystemName = value
 	case "SystemTitle":
 		common.SystemTitle = value
+	case "SystemDescription":
+		common.SystemDescription = value
 	case "Logo":
 		common.Logo = value
 	case "WeChatServerAddress":
