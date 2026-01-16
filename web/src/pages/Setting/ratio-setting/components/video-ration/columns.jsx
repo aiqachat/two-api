@@ -26,13 +26,17 @@ export const columns = (refresh) => {
       render: (config) => {
         return (
           <>
-            {Object.entries(config).map(([key, value]) => {
-              return (
-                <div key={key}>
-                  分辨率({key}): {value}元/秒
-                </div>
-              );
-            })}
+            {Object.entries(config)
+              .sort(([a], [b]) => {
+                return +a.replace(/\D/, '') - +b.replace(/\D/, '');
+              })
+              .map(([key, value]) => {
+                return (
+                  <div key={key}>
+                    分辨率({key}): {value}元/秒
+                  </div>
+                );
+              })}
           </>
         );
       },
