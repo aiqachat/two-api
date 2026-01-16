@@ -49,6 +49,12 @@ export function getSystemName() {
   return system_name;
 }
 
+export function getSystemTitle() {
+  let system_title = localStorage.getItem('system_title');
+  if (!system_title) return 'New API';
+  return system_title;
+}
+
 export function getLogo() {
   let logo = localStorage.getItem('logo');
   if (!logo) return '/logo.png';

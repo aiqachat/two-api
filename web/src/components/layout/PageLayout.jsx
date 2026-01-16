@@ -33,6 +33,7 @@ import {
   getSystemName,
   showError,
   setStatusData,
+  getSystemTitle,
 } from '../../helpers';
 import { UserContext } from '../../context/User';
 import { StatusContext } from '../../context/Status';
@@ -114,7 +115,7 @@ const PageLayout = () => {
       }
     }
     // 设置标题
-    document.title = getSystemName();
+    document.title = getSystemTitle();
     const savedLang = localStorage.getItem('i18nextLng');
     if (savedLang) {
       i18n.changeLanguage(savedLang);

@@ -48,6 +48,8 @@ const OtherSetting = () => {
     Footer: '',
     About: '',
     HomePageContent: '',
+    SystemTitle: '',
+    SystemDescription: '',
   });
   let [loading, setLoading] = useState(false);
   const [showUpdateModal, setShowUpdateModal] = useState(false);
@@ -82,6 +84,8 @@ const OtherSetting = () => {
     About: false,
     Footer: false,
     CheckUpdate: false,
+    SystemTitle: false,
+    SystemDescription: false,
   });
   const handleInputChange = async (value, e) => {
     const name = e.target.id;
@@ -165,6 +169,25 @@ const OtherSetting = () => {
       setLoadingInput((loadingInput) => ({
         ...loadingInput,
         SystemName: false,
+      }));
+    }
+  };
+  //  个性化设置 - SystemTitle
+  const submitSystemTitle = async () => {
+    try {
+      setLoadingInput((loadingInput) => ({
+        ...loadingInput,
+        SystemTitle: true,
+      }));
+      await updateOption('SystemTitle', inputs.SystemTitle);
+      showSuccess('系统标题已更新');
+    } catch (error) {
+      console.error('系统标题更新失败', error);
+      showError('系统标题更新失败');
+    } finally {
+      setLoadingInput((loadingInput) => ({
+        ...loadingInput,
+        SystemTitle: false,
       }));
     }
   };
@@ -430,6 +453,18 @@ const OtherSetting = () => {
                 loading={loadingInput['SystemName']}
               >
                 {t('设置系统名称')}
+              </Button>
+              <Form.Input
+                label="系统标题"
+                placeholder="在此输入系统标题"
+                field="SystemTitle"
+                onChange={handleInputChange}
+              />
+              <Button
+                onClick={submitSystemTitle}
+                loading={loadingInput['SystemTitle']}
+              >
+                <>设置系统标题</>
               </Button>
               <Form.Input
                 label={t('Logo 图片地址')}
