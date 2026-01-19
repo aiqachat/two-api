@@ -20,23 +20,23 @@ export const EditModal = ({ modalProps, onComplete, edit = true, id }) => {
     const resolutionArr = (resolutionRes.value || []).sort((a, b) => {
       return getResolutionValue(a.key) - getResolutionValue(b.key);
     });
-    if (model && _.get(model, 'bound_channels[0].type') === 54) {
-      setResolutionItems([
-        ...resolutionArr.map(({ key, name }) => {
-          return {
-            name: `${name}(无声)`,
-            key,
-          };
-        }),
-        ...resolutionArr.map(({ key, name }) => {
-          return {
-            name: `${name}(有声)`,
-            key: `${key}_audio`,
-          };
-        }),
-      ]);
-      return
-    }
+    // if (model && _.get(model, 'bound_channels[0].type') === 54) {
+    //   setResolutionItems([
+    //     ...resolutionArr.map(({ key, name }) => {
+    //       return {
+    //         name: `${name}(无声)`,
+    //         key,
+    //       };
+    //     }),
+    //     ...resolutionArr.map(({ key, name }) => {
+    //       return {
+    //         name: `${name}(有声)`,
+    //         key: `${key}_audio`,
+    //       };
+    //     }),
+    //   ]);
+    //   return
+    // }
     setResolutionItems(resolutionArr.map(({ key, name }) => {
       return {
         name: `${name}(无声)`,
