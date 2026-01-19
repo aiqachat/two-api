@@ -62,7 +62,7 @@ export const EditModal = ({ modalProps, onComplete, edit = true, id }) => {
               label={`分辨率${item.name}每秒价格`}
               field={`config.${item.key}`}
               rules={[{ required: true }]}
-              precision={2}
+              precision={3}
               step={1}
               min={0}
               max={99999999999}

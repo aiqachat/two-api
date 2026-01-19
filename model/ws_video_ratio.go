@@ -69,7 +69,7 @@ func WsVideoRatioPageList(
 		return nil, 0, err
 	}
 
-	if err = query.Unscoped().Order("updated_time desc").Limit(pageInfo.GetPageSize()).Offset(pageInfo.GetStartIdx()).Find(&items).Error; err != nil {
+	if err = query.Unscoped().Order("id asc").Limit(pageInfo.GetPageSize()).Offset(pageInfo.GetStartIdx()).Find(&items).Error; err != nil {
 		tx.Rollback()
 		return nil, 0, err
 	}

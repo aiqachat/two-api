@@ -39,7 +39,9 @@ const getResolutionOptionsList = async () => {
       {},
     );
     WsError.checkApiResult(res);
-    return res.data.items;
+    return res.data.items.sort((a, b) => {
+      return +a.key.replace(/\D/, '') - +b.key.replace(/\D/, '');
+    });
   } catch (e) {
     WsError.handleError(e);
     return [];
