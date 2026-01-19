@@ -351,11 +351,9 @@ function App() {
         <Route
           path='/dev'
           element={
-            <PrivateRoute>
-              <Suspense fallback={<Loading></Loading>} key={location.pathname}>
-                <DevPage />
-              </Suspense>
-            </PrivateRoute>
+            <Suspense fallback={<Loading></Loading>} key={location.pathname}>
+              <DevPage />
+            </Suspense>
           }
         />
         {/*============================================开发专用页面*/}

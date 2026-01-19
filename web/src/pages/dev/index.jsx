@@ -5,7 +5,13 @@ import { wsDev } from '@/helpers/ws-dev.js';
 
 const DevPage = () => {
   return (
-    <div className='mt-[60px] px-2'>
+    <div style={{
+      width: '100%',
+      display: 'flex',
+      justifyContent: 'center',
+      alignItems: 'center',
+      marginTop: '30vh'
+    }}>
       <Button
         type='primary'
         onClick={async () => {
@@ -15,6 +21,7 @@ const DevPage = () => {
           await wsDev.autoLogin()
           Toast.success('已自动登录')
         }}
+        size="large"
       >
         一键登录
       </Button>
