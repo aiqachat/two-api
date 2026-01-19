@@ -1,17 +1,54 @@
 import { Form, Modal } from '@douyinfe/semi-ui';
 import { wsCreateModalHandle } from '@components';
-import { useEffect, useRef } from 'react';
+import {useCallback, useEffect, useRef, useState } from 'react';
+import _ from 'lodash';
 import { WsError } from '@helpers';
 import service from './service';
 import { useAsync } from 'react-use';
+import { getResolutionValue } from '../../utils';
 
 export const EditModal = ({ modalProps, onComplete, edit = true, id }) => {
   const formRef = useRef(null);
-  const modelOptions = useAsync(service.getModelOptionsList);
-  const resolutionItems = useAsync(service.getResolutionOptionsList);
+  const modelRes = useAsync(service.getModelOptionsList);
+  const resolutionRes = useAsync(service.getResolutionOptionsList);
+  const [resolutionItems, setResolutionItems] = useState([]);
+
+  const loadResolutionItems = useCallback((modelName) => {
+    const model = (modelRes.value || []).find(
+        (model) => model.model_name === modelName,
+    );
+    const resolutionArr = (resolutionRes.value || []).sort((a, b) => {
+      return getResolutionValue(a.key) - getResolutionValue(b.key);
+    });
+    if (model && _.get(model, 'bound_channels[0].type') === 54) {
+      setResolutionItems([
+        ...resolutionArr.map(({ key, name }) => {
+          return {
+            name: `${name}(无声)`,
+            key,
+          };
+        }),
+        ...resolutionArr.map(({ key, name }) => {
+          return {
+            name: `${name}(有声)`,
+            key: `${key}_audio`,
+          };
+        }),
+      ]);
+      return
+    }
+    setResolutionItems(resolutionArr.map(({ key, name }) => {
+      return {
+        name: `${name}(无声)`,
+        key,
+      };
+    }));
+  }, [resolutionRes.value, modelRes.value, setResolutionItems]);
+
   const loadDetails = async () => {
     try {
       const res = await service.getWsVideoRationDetails(id);
+      loadResolutionItems(res.model_name);
       formRef.current?.formApi.setValues({
         model_name: res.model_name,
         config: res.config,
@@ -20,12 +57,15 @@ export const EditModal = ({ modalProps, onComplete, edit = true, id }) => {
       WsError.handleError(e);
     }
   };
+
   useEffect(() => {
+    loadResolutionItems('-1');
     if (!edit) return;
-    if (!resolutionItems.value) return;
-    if (!modelOptions.value) return;
+    if (!resolutionRes.value) return;
+    if (!modelRes.value) return;
     loadDetails().then();
-  }, [edit, resolutionItems.value, modelOptions.value]);
+  }, [edit, resolutionRes.value, modelRes.value]);
+
   return (
     <Modal
       {...modalProps}
@@ -51,12 +91,20 @@ export const EditModal = ({ modalProps, onComplete, edit = true, id }) => {
           field='model_name'
           disabled={edit}
           rules={[{ required: true }]}
-          loading={modelOptions.loading}
-          optionList={modelOptions.value}
+          loading={modelRes.loading}
+          optionList={(modelRes.value || []).map((model) => {
+            return {
+              label: model.model_name,
+              value: model.model_name,
+            };
+          })}
           placeholder='请选择模型'
           style={{ width: '100%' }}
+          onChange={(val) => {
+            loadResolutionItems(val);
+          }}
         />
-        {(resolutionItems.value || []).map((item) => {
+        {resolutionItems.map((item) => {
           return (
             <Form.InputNumber
               label={`分辨率${item.name}每秒价格`}

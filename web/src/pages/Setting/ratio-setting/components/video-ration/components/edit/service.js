@@ -39,9 +39,7 @@ const getResolutionOptionsList = async () => {
       {},
     );
     WsError.checkApiResult(res);
-    return res.data.items.sort((a, b) => {
-      return +a.key.replace(/\D/, '') - +b.key.replace(/\D/, '');
-    });
+    return res.data.items;
   } catch (e) {
     WsError.handleError(e);
     return [];
@@ -54,12 +52,7 @@ const getModelOptionsList = async () => {
       page_size: 10000,
     });
     WsError.checkApiResult(res);
-    return res.data.items.map((model) => {
-      return {
-        label: model.model_name,
-        value: model.model_name,
-      };
-    });
+    return res.data.items;
   } catch (e) {
     WsError.handleError(e);
     return [];
