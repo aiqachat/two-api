@@ -35,6 +35,7 @@ import {
   setStatusData,
   getSystemTitle,
   getSystemDescription,
+  getSystemKeywords,
 } from '../../helpers';
 import { UserContext } from '../../context/User';
 import { StatusContext } from '../../context/Status';
@@ -123,6 +124,12 @@ const PageLayout = () => {
       metaDescriptionEle.setAttribute('content', getSystemDescription());
     }
     // ========================= 设置mate description
+    // ========================= 设置mate keywords
+    const metaKeywordsEle = document.querySelector("meta[name='keywords']");
+    if(metaKeywordsEle) {
+      metaKeywordsEle.setAttribute('content', getSystemKeywords());
+    }
+    // ========================= 设置mate keywords
     const savedLang = localStorage.getItem('i18nextLng');
     if (savedLang) {
       i18n.changeLanguage(savedLang);

@@ -50,6 +50,7 @@ const OtherSetting = () => {
     HomePageContent: '',
     SystemTitle: '',
     SystemDescription: '',
+    SystemKeywords: '',
   });
   let [loading, setLoading] = useState(false);
   const [showUpdateModal, setShowUpdateModal] = useState(false);
@@ -86,6 +87,7 @@ const OtherSetting = () => {
     CheckUpdate: false,
     SystemTitle: false,
     SystemDescription: false,
+    SystemKeywords: false,
   });
   const handleInputChange = async (value, e) => {
     const name = e.target.id;
@@ -209,6 +211,26 @@ const OtherSetting = () => {
       setLoadingInput((loadingInput) => ({
         ...loadingInput,
         SystemDescription: false,
+      }));
+    }
+  };
+
+  //  个性化设置 - SystemKeywords
+  const submitSystemKeywords = async () => {
+    try {
+      setLoadingInput((loadingInput) => ({
+        ...loadingInput,
+        SystemKeywords: true,
+      }));
+      await updateOption('SystemKeywords', inputs.SystemKeywords);
+      showSuccess('站点关键字已更新');
+    } catch (error) {
+      console.error('站点关键字更新失败', error);
+      showError('站点关键字更新失败');
+    } finally {
+      setLoadingInput((loadingInput) => ({
+        ...loadingInput,
+        SystemKeywords: false,
       }));
     }
   };
@@ -498,6 +520,18 @@ const OtherSetting = () => {
                 loading={loadingInput['SystemDescription']}
               >
                 <>设置站点描述</>
+              </Button>
+              <Form.Input
+                label="站点关键字"
+                placeholder="在此输入站点关键字"
+                field="SystemKeywords"
+                onChange={handleInputChange}
+              />
+              <Button
+                onClick={submitSystemKeywords}
+                loading={loadingInput['SystemKeywords']}
+              >
+                <>设置站点站点关键字</>
               </Button>
               <Form.Input
                 label={t('Logo 图片地址')}
