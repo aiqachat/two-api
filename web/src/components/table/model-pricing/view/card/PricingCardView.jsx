@@ -266,23 +266,32 @@ const PricingCardView = ({
                       <h3 className='text-lg font-bold text-gray-900 truncate'>
                         {model.model_name}
                       </h3>
-                      <div className='flex items-center gap-3 text-xs mt-1'>
-                        {model.video_ratio_config
-                          ? Object.entries(model.video_ratio_config).map(
-                              ([key, value]) => {
-                                return (
-                                  <span
-                                    style={{
-                                      color: 'var(--semi-color-text-1)',
-                                    }}
-                                  >
-                                    {`${key}: ${symbol}${value} / 秒`}
-                                  </span>
-                                );
-                              },
-                            )
-                          : formatPriceInfo(priceData, t)}
-                      </div>
+                      {model.video_ratio_config ? (
+                        <div className='items-center gap-3 text-xs mt-1'>
+                          {model.video_ratio_config.map(
+                            ({ label, name, type, value }) => {
+                              let text = `${label}：${value} 倍`;
+                              if (type === 'resolution_price') {
+                                text = `${label}：${symbol}${value} / 秒`;
+                              }
+                              return (
+                                <div
+                                  style={{
+                                    color: 'var(--semi-color-text-1)',
+                                  }}
+                                  key={name}
+                                >
+                                  {text}
+                                </div>
+                              );
+                            },
+                          )}
+                        </div>
+                      ) : (
+                        <div className='flex items-center gap-3 text-xs mt-1'>
+                          {formatPriceInfo(priceData, t)}
+                        </div>
+                      )}
                     </div>
                   </div>
 

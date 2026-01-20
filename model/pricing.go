@@ -27,7 +27,7 @@ type Pricing struct {
 	CompletionRatio        float64                 `json:"completion_ratio"`
 	EnableGroup            []string                `json:"enable_groups"`
 	SupportedEndpointTypes []constant.EndpointType `json:"supported_endpoint_types"`
-	VideoRatioConfig       map[string]float64		`json:"video_ratio_config"`
+	VideoRatioConfig       []WsVideoRatioConfigItem		`json:"video_ratio_config"`
 }
 
 type PricingVendor struct {

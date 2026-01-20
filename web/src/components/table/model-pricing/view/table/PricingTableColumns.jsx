@@ -237,10 +237,14 @@ export const getPricingTableColumns = ({
         return (
           <div className='space-y-1'>
             {
-              Object.entries(record.video_ratio_config).map(([key, value]) => {
+              record.video_ratio_config.map(({label, name, type, value}) => {
+                let text = `${label}：${value} 倍`
+                if(type === 'resolution_price') {
+                  text = `${label}：${symbol}${value} / 秒`
+                }
                 return (
-                  <div className='text-gray-700' key={key}>
-                    分辨率({key})：{symbol}{value} / 秒
+                  <div className='text-gray-700' key={name}>
+                    {text}
                   </div>
                 )
               })

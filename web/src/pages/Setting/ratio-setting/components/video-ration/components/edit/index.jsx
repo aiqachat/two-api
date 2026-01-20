@@ -56,7 +56,6 @@ export const EditModal = ({ modalProps, onComplete, edit = true, id }) => {
             })),
           };
           if (edit) {
-            console.log(values);
             await service.editWsVideoRation({
               id,
               ...values,

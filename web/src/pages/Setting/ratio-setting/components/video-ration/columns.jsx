@@ -3,6 +3,7 @@ import { IconDelete, IconEdit } from '@douyinfe/semi-icons';
 import React from 'react';
 import service from './service';
 import { editModal } from './components/edit';
+import { getCurrencyConfig } from '@/helpers/index.js';
 
 export const columns = (refresh) => {
   return [
@@ -24,14 +25,15 @@ export const columns = (refresh) => {
       key: 'config',
       width: 300,
       render: (config) => {
+        const { symbol } = getCurrencyConfig();
         return (
           <>
             {config.map(({ name, label, value, type }) => {
-              return (
-                <div key={name}>
-                  {label}: {value}{type === 'resolution_price' ? '元/秒' : '倍'}
-                </div>
-              );
+              let text = `${label}：${value} 倍`;
+              if (type === 'resolution_price') {
+                text = `${label}：${symbol}${value} / 秒`;
+              }
+              return <div key={name}>{text}</div>;
             })}
           </>
         );
@@ -56,7 +58,6 @@ export const columns = (refresh) => {
             icon={<IconDelete />}
             type='danger'
             onClick={() => {
-              console.log('#');
               const modal = Modal.confirm({
                 open: true,
                 title: '删除模型',
