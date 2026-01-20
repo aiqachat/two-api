@@ -3,6 +3,7 @@ package model
 import (
 	"encoding/json"
 	"fmt"
+	"strings"
 
 	"github.com/QuantumNous/new-api/common"
 	"github.com/pkg/errors"
@@ -25,11 +26,11 @@ type WsVideoRatioConfigItem struct {
 }
 
 type WsVideoRatioMap struct {
-	Id          int                `json:"id"`
-	ModelName   string             `json:"model_name"`
-	Config      map[string]float64 `json:"config"`
-	CreatedTime int64              `json:"created_time"`
-	UpdatedTime int64              `json:"updated_time"`
+	Id          int                      `json:"id"`
+	ModelName   string                   `json:"model_name"`
+	Config      []WsVideoRatioConfigItem `json:"config"`
+	CreatedTime int64                    `json:"created_time"`
+	UpdatedTime int64                    `json:"updated_time"`
 }
 
 func WsVideoRatio2map(w WsVideoRatio) (WsVideoRatioMap, error) {
@@ -135,7 +136,7 @@ func WsVideoRatioGetById(id int) (*WsVideoRatioMap, error) {
 	return &m, err
 }
 
-func WsVideoRatioUpdateConfigById(id int, config map[string]float64) error {
+func WsVideoRatioUpdateConfigById(id int, config []WsVideoRatioConfigItem) error {
 	if id == 0 {
 		return errors.New("id不能为空！")
 	}
@@ -143,8 +144,22 @@ func WsVideoRatioUpdateConfigById(id int, config map[string]float64) error {
 		return errors.New("倍率配置不能为空")
 	}
 	var err error = nil
+	// 将 config 转换为临时结构体切片，排除 Label 字段
+	type TempConfigItem struct {
+		Name  string  `json:"name"`
+		Type  string  `json:"type"`
+		Value float64 `json:"value"`
+	}
+	tempConfig := make([]TempConfigItem, len(config))
+	for i, item := range config {
+		tempConfig[i] = TempConfigItem{
+			Name:  item.Name,
+			Type:  item.Type,
+			Value: item.Value,
+		}
+	}
 	// 将config转换为JSON字符串
-	configBytes, err := json.Marshal(config)
+	configBytes, err := json.Marshal(tempConfig)
 	if err != nil {
 		return errors.Wrap(err, "无法序列化config为JSON")
 	}
@@ -157,7 +172,7 @@ func WsVideoRatioUpdateConfigById(id int, config map[string]float64) error {
 	return err
 }
 
-func WsVideoRatioCreate(modelName string, config map[string]float64) (*WsVideoRatio, error) {
+func WsVideoRatioCreate(modelName string, config []WsVideoRatioConfigItem) (*WsVideoRatio, error) {
 	if modelName == "" {
 		return nil, errors.New("模型名称不能为空")
 	}
@@ -168,11 +183,12 @@ func WsVideoRatioCreate(modelName string, config map[string]float64) (*WsVideoRa
 	if current != nil {
 		return nil, errors.New("已存在模型'" + modelName + "'的视频配置")
 	}
-	for _, resolution := range ResolutionList {
-		if _, ok := config[resolution]; !ok {
-			return nil, errors.New("请填写" + resolution + "的倍率")
-		}
-	}
+	// @@@@@@@@
+	//for _, resolution := range ResolutionList {
+	//	if _, ok := config[resolution]; !ok {
+	//		return nil, errors.New("请填写" + resolution + "的倍率")
+	//	}
+	//}
 	// 将config转换为JSON字符串
 	configBytes, err := json.Marshal(config)
 	if err != nil {
@@ -212,8 +228,29 @@ func WsVideoRatioFixConfig() error {
 	}
 	// 处理查询结果
 	for _, item := range allItems {
-		fmt.Printf("ID: %d, ModelName: %s, Config: %s\n",
-			item.Id, item.ModelName, item.Config)
+		if !strings.HasPrefix(strings.TrimSpace(item.Config), "{") {
+			continue;
+		}
+		var oldConfig map[string]float64
+		err := json.Unmarshal([]byte(item.Config), &oldConfig)
+		if err != nil {
+			fmt.Printf("解析配置失败: %v\n", err)
+			continue
+		}
+		// 创建与 WsVideoRatioInitConfig 内容一样的副本
+		configList := make([]WsVideoRatioConfigItem, len(WsVideoRatioInitConfig))
+		copy(configList, WsVideoRatioInitConfig)
+		for i := range configList {
+			for oldName, oldValue := range oldConfig {
+				if configList[i].Name == oldName {
+					configList[i].Value = oldValue
+				}
+			}
+		}
+		err = WsVideoRatioUpdateConfigById(item.Id, configList)
+		if err != nil {
+			return err
+		}
 	}
 	return nil
 }

@@ -7,7 +7,7 @@ import (
 	"github.com/pkg/errors"
 )
 
-// 视频倍率配置列表
+// WsVideoRatioPageList 视频倍率配置列表
 func WsVideoRatioPageList(c *gin.Context) {
 	pageInfo := common.GetPageQuery(c)
 	modelName := c.Query("model_name")
@@ -52,7 +52,7 @@ func WsVideoRatioResolutionList(c *gin.Context) {
 	})
 }
 
-// 创建视频倍率配置
+// WsVideoRatioCreate 创建视频倍率配置
 func WsVideoRatioCreate(c *gin.Context) {
 	var params model.WsVideoRatioMap
 	if err := common.UnmarshalBodyReusable(c, &params); err != nil {
