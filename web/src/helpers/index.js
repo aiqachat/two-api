@@ -31,3 +31,4 @@ export * from './dashboard';
 export * from './passkey';
 export * from './ws-error';
 export * from './ws-service';
+export * from './ws-dev';

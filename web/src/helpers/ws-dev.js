@@ -1,8 +1,8 @@
 import { API, updateAPI } from './api';
 import { setUserData } from './data';
-import { debounce } from 'lodash';
+import _ from 'lodash';
 
-export const autoLogin = debounce(
+export const autoLogin = _.debounce(
   async () => {
     const turnstileToken = 11;
     const res = await API.post(`/api/user/login?turnstile=${turnstileToken}`, {

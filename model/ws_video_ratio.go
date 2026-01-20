@@ -2,6 +2,7 @@ package model
 
 import (
 	"encoding/json"
+	"fmt"
 
 	"github.com/QuantumNous/new-api/common"
 	"github.com/pkg/errors"
@@ -14,6 +15,13 @@ type WsVideoRatio struct {
 	//Price       float64 `json:"price" gorm:"type:decimal(10,2);not null"`
 	CreatedTime int64 `json:"created_time" gorm:"type:bigint;default:null"`
 	UpdatedTime int64 `json:"updated_time" gorm:"type:bigint;default:null"`
+}
+
+type WsVideoRatioConfigItem struct {
+	Name  string  `json:"name"`
+	Label string  `json:"label"`
+	Type  string  `json:"type"`
+	Value float64 `json:"value"`
 }
 
 type WsVideoRatioMap struct {
@@ -35,6 +43,19 @@ func WsVideoRatio2map(w WsVideoRatio) (WsVideoRatioMap, error) {
 		return res, err
 	}
 	return res, nil
+}
+
+// WsVideoRatioInitConfig 视频倍率初始配置
+var WsVideoRatioInitConfig = []WsVideoRatioConfigItem{
+	{Name: "480p", Label: "480p分辨率每秒价格", Type: "resolution_price", Value: 1.0},
+	{Name: "720p", Label: "720p分辨率每秒价格", Type: "resolution_price", Value: 1.0},
+	{Name: "1080p", Label: "1080p分辨率每秒价格", Type: "resolution_price", Value: 1.0},
+	// 有声倍率
+	{Name: "audio_ratio", Label: "有声倍率", Type: "audio_ratio", Value: 1.0},
+	// 样片倍率
+	{Name: "draft_ratio", Label: "样片倍率", Type: "audio_ratio", Value: 1.0},
+	// 离线推理模式倍率
+	{Name: "service_tier_flex_ratio", Label: "离线推理模式倍率", Type: "service_tier_flex_ratio", Value: 1.0},
 }
 
 // ResolutionList 支持的分辨率列表
@@ -69,7 +90,8 @@ func WsVideoRatioPageList(
 		return nil, 0, err
 	}
 
-	if err = query.Unscoped().Order("id asc").Limit(pageInfo.GetPageSize()).Offset(pageInfo.GetStartIdx()).Find(&items).Error; err != nil {
+	if err = query.Unscoped().Order("id asc").
+		Limit(pageInfo.GetPageSize()).Offset(pageInfo.GetStartIdx()).Find(&items).Error; err != nil {
 		tx.Rollback()
 		return nil, 0, err
 	}
@@ -179,4 +201,19 @@ func WsVideoRatioDeleteById(id int) error {
 	}
 	err := DB.Delete(&WsVideoRatio{}, id).Error
 	return err
+}
+
+func WsVideoRatioFixConfig() error {
+	var allItems []WsVideoRatio
+
+	// 查询所有数据记录
+	if err := DB.Find(&allItems).Error; err != nil {
+		return err
+	}
+	// 处理查询结果
+	for _, item := range allItems {
+		fmt.Printf("ID: %d, ModelName: %s, Config: %s\n",
+			item.Id, item.ModelName, item.Config)
+	}
+	return nil
 }

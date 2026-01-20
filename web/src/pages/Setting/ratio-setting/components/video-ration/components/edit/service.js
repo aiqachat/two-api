@@ -46,6 +46,17 @@ const getResolutionOptionsList = async () => {
   }
 };
 
+const getWsVideoRatioInitConfig = async () => {
+  try {
+    const res = await deerService.post('/api/ws/video-ratio/initConfig', {});
+    WsError.checkApiResult(res);
+    return res.data.items;
+  } catch (e) {
+    WsError.handleError(e);
+    return [];
+  }
+};
+
 const getModelOptionsList = async () => {
   try {
     const res = await deerService.getPageList('/api/models/', {
@@ -65,4 +76,5 @@ export default {
   getWsVideoRationDetails,
   getModelOptionsList,
   getResolutionOptionsList,
+  getWsVideoRatioInitConfig,
 };

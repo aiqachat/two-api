@@ -24,7 +24,21 @@ func WsVideoRatioPageList(c *gin.Context) {
 	return
 }
 
-// 视频倍率支付分辨率列表
+// WsVideoRatioInitConfig 视频倍率支付分辨率列表
+func WsVideoRatioInitConfig(c *gin.Context) {
+	var items []map[string]any
+	for _, item := range model.ResolutionList {
+		items = append(items, gin.H{
+			"key": item,
+			"name": item,
+		})
+	}
+	common.ApiSuccess(c, gin.H{
+		"items": model.WsVideoRatioInitConfig,
+	})
+}
+
+// WsVideoRatioResolutionList 视频倍率支付分辨率列表
 func WsVideoRatioResolutionList(c *gin.Context) {
 	var items []map[string]any
 	for _, item := range model.ResolutionList {
@@ -94,6 +108,17 @@ func WsVideoRatioDeleteById(c *gin.Context) {
 		return
 	}
 	if err := model.WsVideoRatioDeleteById(params.Id); err != nil {
+		common.ApiError(c, err)
+		return
+	}
+	common.ApiSuccess(c, gin.H{})
+}
+
+
+// WsVideoRatioFix 修复视频倍率配置
+func WsVideoRatioFix(c *gin.Context) {
+	err := model.WsVideoRatioFixConfig()
+	if err != nil {
 		common.ApiError(c, err)
 		return
 	}
