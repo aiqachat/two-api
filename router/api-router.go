@@ -261,7 +261,6 @@ func SetApiRouter(router *gin.Engine) {
 		wsRoute.Use(middleware.AdminAuth())
 		{
 			wsRoute.GET("/video-ratio/page", controller.WsVideoRatioPageList)
-			wsRoute.POST("/video-ratio/resolutionList", controller.WsVideoRatioResolutionList)
 			wsRoute.POST("/video-ratio/initConfig", controller.WsVideoRatioInitConfig)
 			wsRoute.POST("/video-ratio/create", controller.WsVideoRatioCreate)
 			wsRoute.POST("/video-ratio/del", controller.WsVideoRatioDeleteById)

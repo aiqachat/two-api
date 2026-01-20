@@ -7,6 +7,7 @@ import (
 
 	"github.com/QuantumNous/new-api/common"
 	"github.com/pkg/errors"
+	"github.com/samber/lo"
 )
 
 type WsVideoRatio struct {
@@ -40,6 +41,15 @@ func WsVideoRatio2map(w WsVideoRatio) (WsVideoRatioMap, error) {
 	res.CreatedTime = w.CreatedTime
 	res.UpdatedTime = w.UpdatedTime
 	err := json.Unmarshal([]byte(w.Config), &res.Config)
+	for i := range res.Config {
+		configItem := res.Config[i]
+		foundItem, found := lo.Find(WsVideoRatioInitConfig, func(item WsVideoRatioConfigItem) bool {
+			return item.Name == configItem.Name
+		})
+		if found {
+			res.Config[i].Label = foundItem.Label
+		}
+	}
 	if err != nil {
 		return res, err
 	}
@@ -57,13 +67,6 @@ var WsVideoRatioInitConfig = []WsVideoRatioConfigItem{
 	{Name: "draft_ratio", Label: "样片倍率", Type: "audio_ratio", Value: 1.0},
 	// 离线推理模式倍率
 	{Name: "service_tier_flex_ratio", Label: "离线推理模式倍率", Type: "service_tier_flex_ratio", Value: 1.0},
-}
-
-// ResolutionList 支持的分辨率列表
-var ResolutionList = []string{
-	"1080p",
-	"720p",
-	"480p",
 }
 
 func WsVideoRatioPageList(
@@ -183,12 +186,6 @@ func WsVideoRatioCreate(modelName string, config []WsVideoRatioConfigItem) (*WsV
 	if current != nil {
 		return nil, errors.New("已存在模型'" + modelName + "'的视频配置")
 	}
-	// @@@@@@@@
-	//for _, resolution := range ResolutionList {
-	//	if _, ok := config[resolution]; !ok {
-	//		return nil, errors.New("请填写" + resolution + "的倍率")
-	//	}
-	//}
 	// 将config转换为JSON字符串
 	configBytes, err := json.Marshal(config)
 	if err != nil {
@@ -229,7 +226,7 @@ func WsVideoRatioFixConfig() error {
 	// 处理查询结果
 	for _, item := range allItems {
 		if !strings.HasPrefix(strings.TrimSpace(item.Config), "{") {
-			continue;
+			continue
 		}
 		var oldConfig map[string]float64
 		err := json.Unmarshal([]byte(item.Config), &oldConfig)

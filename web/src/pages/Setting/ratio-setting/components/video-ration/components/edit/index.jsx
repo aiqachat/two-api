@@ -16,9 +16,13 @@ export const EditModal = ({ modalProps, onComplete, edit = true, id }) => {
   const loadDetails = async () => {
     try {
       const res = await service.getWsVideoRationDetails(id);
+      const config = {};
+      res.config.forEach(({ name, value }) => {
+        config[name] = value;
+      });
       formRef.current?.formApi.setValues({
         model_name: res.model_name,
-        config: res.config,
+        config,
       });
     } catch (e) {
       WsError.handleError(e);
@@ -28,9 +32,11 @@ export const EditModal = ({ modalProps, onComplete, edit = true, id }) => {
   useEffect(() => {
     if (initConfigList.length === 0) return;
     if (!modelRes.value) return;
-    formRef.current?.formApi.setValues(
-        _.fromPairs(initConfigList.map(({ name, value }) => [name, value]))
-    );
+    formRef.current?.formApi.setValues({
+      config: _.fromPairs(
+        initConfigList.map(({ name, value }) => [name, value]),
+      ),
+    });
     if (!edit) return;
     loadDetails().then();
   }, [edit, initConfigList, modelRes.value]);
@@ -41,9 +47,20 @@ export const EditModal = ({ modalProps, onComplete, edit = true, id }) => {
       title='编辑视频比率'
       onOk={async () => {
         try {
-          const values = await formRef.current?.formApi.validate();
+          const { model_name, config } = await formRef.current?.formApi.validate();
+          const values = {
+            model_name,
+            config: initConfigList.map((item) => ({
+              ...item,
+              value: config[item.name],
+            })),
+          };
           if (edit) {
-            await service.editWsVideoRation({ ...values, id });
+            console.log(values);
+            await service.editWsVideoRation({
+              id,
+              ...values,
+            });
           } else {
             await service.createWsVideoRation(values);
           }
@@ -71,11 +88,10 @@ export const EditModal = ({ modalProps, onComplete, edit = true, id }) => {
           style={{ width: '100%' }}
         />
         {initConfigList.map(({ label, name }) => {
-          console.log(name)
           return (
             <Form.InputNumber
               label={label}
-              field={name}
+              field={`config.${name}`}
               rules={[{ required: true }]}
               precision={3}
               step={1}
