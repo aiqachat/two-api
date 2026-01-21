@@ -24,15 +24,20 @@ import (
 // Request / Response structures
 // ============================
 
-type ContentItem struct {
-	Type     string    `json:"type"`                // "text" or "image_url"
-	Text     string    `json:"text,omitempty"`      // for text type
-	ImageURL *ImageURL `json:"image_url,omitempty"` // for image_url type
-	Role     string    `json:"role,omitempty"`      // "first_frame" or "last_frame" for image_url type
-}
-
 type ImageURL struct {
 	URL string `json:"url"`
+}
+
+type DraftTask struct {
+	Id string `json:"id"`
+}
+
+type ContentItem struct {
+	Type      string     `json:"type"`                 // "text" or "image_url"
+	Text      string     `json:"text,omitempty"`       // for text type
+	ImageURL  *ImageURL  `json:"image_url,omitempty"`  // for image_url type
+	Role      string     `json:"role,omitempty"`       // "first_frame" or "last_frame" for image_url type
+	DraftTask *DraftTask `json:"draft_task,omitempty"` // 样片任务
 }
 
 type requestPayload struct {
@@ -42,7 +47,7 @@ type requestPayload struct {
 	GenerateAudio *bool `json:"generate_audio,omitempty"`
 	// 是否开启样片模式(默认值: false)
 	Draft *bool `json:"draft,omitempty"`
-	// 是否启用离线推理模式(默认值: default)
+	// 处理本次请求的服务等级类型(默认值: default)
 	ServiceTier string `json:"service_tier,omitempty"`
 }
 
@@ -201,6 +206,14 @@ func (a *TaskAdaptor) convertToRequestPayload(req *relaycommon.TaskSubmitReq) (*
 		Model:   req.Model,
 		Content: []ContentItem{},
 	}
+	if req.DraftTaskId != "" {
+		r.Content = append(r.Content, ContentItem{
+			Type: "draft_task",
+			DraftTask: &DraftTask{
+				Id: req.DraftTaskId,
+			},
+		})
+	}
 	if strings.HasPrefix(req.Model, "doubao-seedance-1-5-pro") {
 		if req.GenerateAudio != nil {
 			r.GenerateAudio = req.GenerateAudio
@@ -209,12 +222,8 @@ func (a *TaskAdaptor) convertToRequestPayload(req *relaycommon.TaskSubmitReq) (*
 			r.Draft = req.Draft
 		}
 	}
-	if req.ServiceTierFlex != nil {
-		if *req.ServiceTierFlex {
-			r.ServiceTier = "flex"
-		} else {
-			r.ServiceTier = "default"
-		}
+	if req.ServiceTier != "" {
+		r.ServiceTier = req.ServiceTier
 	}
 
 	// Add text prompt
@@ -366,8 +375,8 @@ func (a *TaskAdaptor) GetVideoInfo(c *gin.Context) (*relaycommon.VideoTaskInfo, 
 			result.Draft = *req.Draft
 		}
 	}
-	if req.ServiceTierFlex != nil {
-		result.ServiceTierFlex = *req.ServiceTierFlex
+	if req.ServiceTier == "flex" {
+		result.ServiceTierFlex = true
 	}
 	return result, nil
 }

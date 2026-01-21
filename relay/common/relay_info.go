@@ -515,8 +515,10 @@ type TaskSubmitReq struct {
 	GenerateAudio *bool `json:"generate_audio,omitempty"`
 	// 是否开启样片模式(默认值: false)
 	Draft *bool `json:"draft,omitempty"`
-	// 是否启用离线推理模式(豆包专用)(默认值: false)
-	ServiceTierFlex *bool `json:"service_tier_flex,omitempty"`
+	// 豆包专用, 处理本次请求的服务等级类型
+	ServiceTier string `json:"service_tier,omitempty"`
+	// 豆包专用, 样片任务ID
+	DraftTaskId string `json:"draft_task_id,omitempty"`
 	// ===================================================== 视频专有参数
 	Mode           string                 `json:"mode,omitempty"`
 	Image          string                 `json:"image,omitempty"`
@@ -531,9 +533,9 @@ type TaskSubmitReq struct {
 type VideoTaskInfo struct {
 	Resolution      string `json:"resolution"`
 	Duration        int    `json:"duration"`
-	GenerateAudio   bool  `json:"generate_audio,omitempty"`
-	Draft           bool  `json:"draft,omitempty"`
-	ServiceTierFlex bool  `json:"service_tier_flex,omitempty"`
+	GenerateAudio   bool   `json:"generate_audio,omitempty"`
+	Draft           bool   `json:"draft,omitempty"`
+	ServiceTierFlex bool   `json:"service_tier_flex,omitempty"`
 }
 
 func (t *TaskSubmitReq) GetPrompt() string {
