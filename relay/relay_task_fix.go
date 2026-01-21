@@ -89,17 +89,37 @@ func HandleVideoModelRatio(
 		}
 	}
 	// =========================================== 获取视频参数
-	videoInfo.PriceTotal = videoInfo.Price * float64(videoInfo.Duration) * videoInfo.GroupRatio
+	// =========================================== 计算总价格
 	res := decimal.NewFromFloat(videoInfo.GroupRatio)
 	res = res.Mul(decimal.NewFromFloat(videoInfo.Price))
 	res = res.Mul(decimal.NewFromInt(videoInfo.Duration))
-	videoInfo.PriceTotal, _ = res.Float64()
-	println(fmt.Sprintf(
-		"视频分辨率: %s, 视频秒数: %d, 分辨率每秒价格: %.4f, 用户分组倍率: %.4f, 结果倍率: %.4f",
-		videoInfo.Resolution, videoInfo.Duration, videoInfo.Price, videoInfo.GroupRatio, videoInfo.PriceTotal,
-	))
-	if videoInfo != nil {
-		return nil, errors.New("测试!!!")
+	if videoInfo.GenerateAudioRatio != nil {
+		res = res.Mul(decimal.NewFromFloat(*videoInfo.GenerateAudioRatio))
 	}
+	if videoInfo.DraftRatio != nil {
+		res = res.Mul(decimal.NewFromFloat(*videoInfo.DraftRatio))
+	}
+	if videoInfo.ServiceTierFlexRatio != nil {
+		res = res.Mul(decimal.NewFromFloat(*videoInfo.ServiceTierFlexRatio))
+	}
+	videoInfo.PriceTotal, _ = res.Float64()
+	// =========================================== 计算总价格
+	// =========================================== 打印日志
+	logStr := fmt.Sprintf("视频分辨率: %s", videoInfo.Resolution)
+	logStr += fmt.Sprintf("视频秒数: %d", videoInfo.Duration)
+	logStr += fmt.Sprintf("分辨率每秒价格: %.4f", videoInfo.Price)
+	logStr += fmt.Sprintf("用户分组倍率: %.4f", videoInfo.GroupRatio)
+	if videoInfo.GenerateAudioRatio != nil {
+		logStr += fmt.Sprintf("生成声音倍率: %.4f", *videoInfo.GenerateAudioRatio)
+	}
+	if videoInfo.DraftRatio != nil {
+		logStr += fmt.Sprintf("样片倍率: %.4f", *videoInfo.DraftRatio)
+	}
+	if videoInfo.ServiceTierFlexRatio != nil {
+		logStr += fmt.Sprintf("离线推理模式倍率: %.4f", *videoInfo.ServiceTierFlexRatio)
+	}
+	logStr += fmt.Sprintf("结果倍率: %.4f", videoInfo.PriceTotal)
+	println(logStr)
+	// =========================================== 打印日志
 	return videoInfo, nil
 }
