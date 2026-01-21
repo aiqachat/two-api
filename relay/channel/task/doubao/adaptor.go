@@ -7,6 +7,7 @@ import (
 	"io"
 	"net/http"
 	"regexp"
+	"strings"
 
 	"github.com/QuantumNous/new-api/constant"
 	"github.com/QuantumNous/new-api/dto"
@@ -37,6 +38,12 @@ type ImageURL struct {
 type requestPayload struct {
 	Model   string        `json:"model"`
 	Content []ContentItem `json:"content"`
+	// 否包含与画面同步的声音(默认值: true)
+	GenerateAudio *bool `json:"generate_audio,omitempty"`
+	// 是否开启样片模式(默认值: false)
+	Draft *bool `json:"draft,omitempty"`
+	// 是否启用离线推理模式(默认值: default)
+	ServiceTier string `json:"service_tier,omitempty"`
 }
 
 type responsePayload struct {
@@ -190,10 +197,24 @@ func (a *TaskAdaptor) convertToRequestPayload(req *relaycommon.TaskSubmitReq) (*
 	if req.Duration == 0 {
 		return nil, errors.New("视频时长不能为空")
 	}
-
 	r := requestPayload{
 		Model:   req.Model,
 		Content: []ContentItem{},
+	}
+	if strings.HasPrefix(req.Model, "doubao-seedance-1-5-pro") {
+		if req.GenerateAudio != nil {
+			r.GenerateAudio = req.GenerateAudio
+		}
+		if req.Draft != nil {
+			r.Draft = req.Draft
+		}
+	}
+	if req.ServiceTierFlex != nil {
+		if *req.ServiceTierFlex {
+			r.ServiceTier = "flex"
+		} else {
+			r.ServiceTier = "default"
+		}
 	}
 
 	// Add text prompt
@@ -322,14 +343,7 @@ func (a *TaskAdaptor) ParseTaskResult(respBody []byte) (*relaycommon.TaskInfo, e
 	return &taskResult, nil
 }
 
-func (a *TaskAdaptor)GetVideoInfo(c *gin.Context) (*relaycommon.VideoTaskInfo, error){
-	//videoInfo := &relaycommon.VideoTaskInfo{
-	//}
-	//err := loadVideoInfo(c, videoInfo)
-	//if err != nil {
-	//	return videoInfo, err
-	//}
-	//return videoInfo, nil
+func (a *TaskAdaptor) GetVideoInfo(c *gin.Context) (*relaycommon.VideoTaskInfo, error) {
 	v, exists := c.Get("task_request")
 	if !exists {
 		return nil, fmt.Errorf("request not found in context")
@@ -341,6 +355,19 @@ func (a *TaskAdaptor)GetVideoInfo(c *gin.Context) (*relaycommon.VideoTaskInfo, e
 	result := &relaycommon.VideoTaskInfo{
 		Duration:   req.Duration,
 		Resolution: req.Resolution,
+	}
+	if strings.HasPrefix(req.Model, "doubao-seedance-1-5-pro") {
+		if req.GenerateAudio != nil {
+			result.GenerateAudio = *req.GenerateAudio
+		} else {
+			result.GenerateAudio = true
+		}
+		if req.Draft != nil {
+			result.Draft = *req.Draft
+		}
+	}
+	if req.ServiceTierFlex != nil {
+		result.ServiceTierFlex = *req.ServiceTierFlex
 	}
 	return result, nil
 }

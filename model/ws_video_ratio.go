@@ -61,10 +61,10 @@ var WsVideoRatioInitConfig = []WsVideoRatioConfigItem{
 	{Name: "480p", Label: "480p分辨率每秒价格", Type: "resolution_price", Value: 1.0},
 	{Name: "720p", Label: "720p分辨率每秒价格", Type: "resolution_price", Value: 1.0},
 	{Name: "1080p", Label: "1080p分辨率每秒价格", Type: "resolution_price", Value: 1.0},
-	// 有声倍率
-	{Name: "audio_ratio", Label: "有声倍率", Type: "audio_ratio", Value: 1.0},
+	// 生成声音倍率
+	{Name: "generate_audio_ratio", Label: "生成声音倍率", Type: "generate_audio_ratio", Value: 1.0},
 	// 样片倍率
-	{Name: "draft_ratio", Label: "样片倍率", Type: "audio_ratio", Value: 1.0},
+	{Name: "draft_ratio", Label: "样片倍率", Type: "draft_ratio", Value: 1.0},
 	// 离线推理模式倍率
 	{Name: "service_tier_flex_ratio", Label: "离线推理模式倍率", Type: "service_tier_flex_ratio", Value: 1.0},
 }

@@ -502,14 +502,22 @@ type TaskRelayInfo struct {
 }
 
 type TaskSubmitReq struct {
-	Prompt         string                 `json:"prompt"`
-	Model          string                 `json:"model,omitempty"`
+	Prompt string `json:"prompt"`
+	Model  string `json:"model,omitempty"`
+	// ===================================================== 视频专有参数
 	// 分辨率
-	Resolution     string                 `json:"resolution,omitempty"`
+	Resolution string `json:"resolution,omitempty"`
 	// 宽高比
-	Ratio          string                 `json:"ratio,omitempty"`
+	Ratio string `json:"ratio,omitempty"`
 	// 生成视频时长(秒)
-	Duration       int                    `json:"duration,omitempty"`
+	Duration int `json:"duration,omitempty"`
+	// 否包含与画面同步的声音(默认值: false)
+	GenerateAudio *bool `json:"generate_audio,omitempty"`
+	// 是否开启样片模式(默认值: false)
+	Draft *bool `json:"draft,omitempty"`
+	// 是否启用离线推理模式(豆包专用)(默认值: false)
+	ServiceTierFlex *bool `json:"service_tier_flex,omitempty"`
+	// ===================================================== 视频专有参数
 	Mode           string                 `json:"mode,omitempty"`
 	Image          string                 `json:"image,omitempty"`
 	Images         []string               `json:"images,omitempty"`
@@ -517,6 +525,15 @@ type TaskSubmitReq struct {
 	Seconds        string                 `json:"seconds,omitempty"`
 	InputReference string                 `json:"input_reference,omitempty"`
 	Metadata       map[string]interface{} `json:"metadata,omitempty"`
+}
+
+// VideoTaskInfo 视频任务参数
+type VideoTaskInfo struct {
+	Resolution      string `json:"resolution"`
+	Duration        int    `json:"duration"`
+	GenerateAudio   bool  `json:"generate_audio,omitempty"`
+	Draft           bool  `json:"draft,omitempty"`
+	ServiceTierFlex bool  `json:"service_tier_flex,omitempty"`
 }
 
 func (t *TaskSubmitReq) GetPrompt() string {
@@ -583,12 +600,6 @@ type TaskInfo struct {
 	Progress         string `json:"progress,omitempty"`
 	CompletionTokens int    `json:"completion_tokens,omitempty"` // 用于按倍率计费
 	TotalTokens      int    `json:"total_tokens,omitempty"`      // 用于按倍率计费
-}
-
-// 视频任务参数
-type VideoTaskInfo struct {
-	Resolution string `json:"resolution"`
-	Duration   int  `json:"duration"`
 }
 
 func FailTaskInfo(reason string) *TaskInfo {
