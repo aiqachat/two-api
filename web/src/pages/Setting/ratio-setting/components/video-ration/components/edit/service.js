@@ -60,7 +60,7 @@ const getWsVideoRatioInitConfig = async () => {
 const getModelOptionsList = async () => {
   try {
     const res = await deerService.getPageList('/api/models/', {
-      page_size: 10000,
+      pageSize: 10000,
     });
     WsError.checkApiResult(res);
     return res.data.items;
