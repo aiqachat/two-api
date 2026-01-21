@@ -347,6 +347,16 @@ func (a *TaskAdaptor) convertToAliRequest(info *relaycommon.RelayInfo, req relay
 		info.PriceData.OtherRatios[s] = f
 	}
 
+	// ====================================  网商专用处理
+	if req.Resolution == "" {
+		return nil, errors.New("视频分辨率不能为空")
+	}
+	aliReq.Parameters.Resolution = strings.ToUpper(req.Resolution)
+	if req.GenerateAudio != nil {
+		aliReq.Parameters.Audio = req.GenerateAudio
+	}
+	// ====================================  网商专用处理
+
 	return aliReq, nil
 }
 
@@ -522,6 +532,11 @@ func (a *TaskAdaptor)GetVideoInfo(c *gin.Context) (*relaycommon.VideoTaskInfo, e
 	result := &relaycommon.VideoTaskInfo{
 		Duration:   req.Duration,
 		Resolution: req.Resolution,
+	}
+	if req.GenerateAudio != nil {
+		result.GenerateAudio = *req.GenerateAudio
+	} else {
+		result.GenerateAudio = true
 	}
 	return result, nil
 }
