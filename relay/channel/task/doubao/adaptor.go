@@ -206,14 +206,6 @@ func (a *TaskAdaptor) convertToRequestPayload(req *relaycommon.TaskSubmitReq) (*
 		Model:   req.Model,
 		Content: []ContentItem{},
 	}
-	if req.DraftTaskId != "" {
-		r.Content = append(r.Content, ContentItem{
-			Type: "draft_task",
-			DraftTask: &DraftTask{
-				Id: req.DraftTaskId,
-			},
-		})
-	}
 	if strings.HasPrefix(req.Model, "doubao-seedance-1-5-pro") {
 		if req.GenerateAudio != nil {
 			r.GenerateAudio = req.GenerateAudio
@@ -302,6 +294,17 @@ func (a *TaskAdaptor) convertToRequestPayload(req *relaycommon.TaskSubmitReq) (*
 				}
 			}
 		}
+	}
+
+	if req.DraftTaskId != "" {
+		// 如果有样片，内容仅使用样片
+		r.Content = []ContentItem{}
+		r.Content = append(r.Content, ContentItem{
+			Type: "draft_task",
+			DraftTask: &DraftTask{
+				Id: req.DraftTaskId,
+			},
+		})
 	}
 
 	// TODO: Add support for additional parameters from metadata
