@@ -509,5 +509,13 @@ func convertAliStatus(aliStatus string) string {
 }
 
 func (a *TaskAdaptor)GetVideoInfo(c *gin.Context) (*relaycommon.VideoTaskInfo, error){
-	return nil, errors.New("视频参数处理未实现")
+	var req relaycommon.TaskSubmitReq
+	if err := common.UnmarshalBodyReusable(c, &req); err != nil {
+		return nil, fmt.Errorf("阿里获取视频信息时, 发生转换任务请求失败")
+	}
+	result := &relaycommon.VideoTaskInfo{
+		Duration:   req.Duration,
+		Resolution: req.Resolution,
+	}
+	return result, nil
 }

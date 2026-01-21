@@ -53,39 +53,45 @@ func RelayTaskSubmit(c *gin.Context, info *relaycommon.RelayInfo) (taskErr *dto.
 	if modelName == "" {
 		modelName = service.CoverTaskActionToModelName(platform, info.Action)
 	}
-	modelPrice, success := ratio_setting.GetModelPrice(modelName, true)
-	if !success {
-		defaultPrice, ok := ratio_setting.GetDefaultModelPriceMap()[modelName]
-		if !ok {
-			modelPrice = 0.1
-		} else {
-			modelPrice = defaultPrice
-		}
-	}
 
 	// 预扣
 	groupRatioResult := ratio_setting.GetGroupRatioResult(info.UserGroup, info.UsingGroup, modelName)
-	var ratio = modelPrice * groupRatioResult.Result
-	// FIXME: 临时修补，支持任务仅按次计费
-	if !common.StringsContains(constant.TaskPricePatches, modelName) {
-		if len(info.PriceData.OtherRatios) > 0 {
-			for _, ra := range info.PriceData.OtherRatios {
-				if 1.0 != ra {
-					ratio *= ra
-				}
-			}
-		}
-	}
-	// FIXME: 处理视频模型价格
+
+	var ratio float64
+	var modelPrice float64
+
 	videoModelRatio, err := HandleVideoModelRatio(c, adaptor, info, groupRatioResult.Result)
 	if videoModelRatio != nil {
+		// 已配置视频模型价格处理
 		if err != nil {
 			return service.TaskErrorWrapper(err, "handle_video_model_ratio_failed", http.StatusInternalServerError)
 		}
 		ratio = videoModelRatio.PriceTotal
+	} else {
+		// 未配置视频模型价格处理
+		modelPrice, success := ratio_setting.GetModelPrice(modelName, true)
+		if !success {
+			defaultPrice, ok := ratio_setting.GetDefaultModelPriceMap()[modelName]
+			if !ok {
+				modelPrice = 0.1
+			} else {
+				modelPrice = defaultPrice
+			}
+		}
+		ratio = modelPrice * groupRatioResult.Result
+		// FIXME: 临时修补，支持任务仅按次计费
+		if !common.StringsContains(constant.TaskPricePatches, modelName) {
+			if len(info.PriceData.OtherRatios) > 0 {
+				for _, ra := range info.PriceData.OtherRatios {
+					if 1.0 != ra {
+						ratio *= ra
+					}
+				}
+			}
+		}
+		println(fmt.Sprintf("model: %s, model_price: %.4f, group: %s, group_ratio: %.4f, final_ratio: %.4f",
+			modelName, modelPrice, info.UsingGroup, groupRatioResult.Result, ratio))
 	}
-	println(fmt.Sprintf("model: %s, model_price: %.4f, group: %s, group_ratio: %.4f, final_ratio: %.4f",
-		modelName, modelPrice, info.UsingGroup, groupRatioResult.Result, ratio))
 	userQuota, err := model.GetUserQuota(info.UserId, false)
 	if err != nil {
 		taskErr = service.TaskErrorWrapper(err, "get_user_quota_failed", http.StatusInternalServerError)
